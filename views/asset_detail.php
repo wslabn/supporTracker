@@ -147,6 +147,9 @@
     </div>
 </div>
 
+<!-- Modal Container -->
+<div id="modalContainer"></div>
+
 <script>
 function editAsset(id) {
     fetch(`/SupporTracker/assets?action=edit&id=${id}`)
@@ -212,10 +215,45 @@ function editCredential(id) {
 }
 
 function addWorkOrder(assetId) {
-    alert('Work order functionality coming soon');
+    fetch(`/SupporTracker/workorders?action=add&asset_id=${assetId}`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('modalContainer').innerHTML = html;
+            const modal = new bootstrap.Modal(document.querySelector('#workorderModal'));
+            modal.show();
+            setupWorkOrderForm();
+        });
 }
 
 function editWorkOrder(id) {
-    alert('Work order functionality coming soon');
+    window.location.href = `/SupporTracker/workorder?id=${id}`;
+}
+
+function setupWorkOrderForm() {
+    const form = document.getElementById('workorderForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('ajax', '1');
+            formData.append('add_workorder', '1');
+            
+            fetch('/SupporTracker/workorders', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.querySelector('#workorderModal')).hide();
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                bootstrap.Modal.getInstance(document.querySelector('#workorderModal')).hide();
+                location.reload();
+            });
+        });
+    }
 }
 </script>

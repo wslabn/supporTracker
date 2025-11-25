@@ -69,6 +69,24 @@ if ($_POST) {
     }
 }
 
+// Handle JSON format requests for dropdowns
+if (isset($_GET['format']) && $_GET['format'] === 'json') {
+    $company_id = $_GET['company_id'] ?? null;
+    if ($company_id) {
+        $stmt = $pdo->prepare("SELECT id, name, asset_tag FROM assets WHERE company_id = ? AND status = 'active' ORDER BY name");
+        $stmt->execute([$company_id]);
+        $assets = $stmt->fetchAll();
+        
+        header('Content-Type: application/json');
+        echo json_encode($assets);
+        exit;
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode([]);
+    exit;
+}
+
 // Handle AJAX requests for modals
 if (isset($_GET['action'])) {
     if ($_GET['action'] == 'add') {
