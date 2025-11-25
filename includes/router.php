@@ -74,13 +74,23 @@ $router->get('/assets', 'controllers/assets.php');
 $router->get('/asset', 'controllers/asset_detail.php');
 $router->get('/employees', 'controllers/employees.php');
 $router->get('/employee', 'controllers/employee_detail.php');
+$router->get('/workorders', 'controllers/workorders.php');
+$router->get('/workorder', 'controllers/workorder_detail.php');
+$router->get('/projects', 'controllers/projects.php');
+$router->get('/parts', 'controllers/parts.php');
 $router->get('/credentials', 'controllers/credentials.php');
 $router->get('/search', 'controllers/search.php');
 $router->get('/logout', 'logout.php');
+$router->get('/phase2-test', 'phase2_test_checklist.php');
+$router->get('/check-db', 'check_database.php');
 
 $router->post('/companies', 'controllers/companies.php');
 $router->post('/assets', 'controllers/assets.php');
 $router->post('/employees', 'controllers/employees.php');
+$router->post('/workorders', 'controllers/workorders.php');
+$router->post('/workorder', 'controllers/workorder_detail.php');
+$router->post('/projects', 'controllers/projects.php');
+$router->post('/parts', 'controllers/parts.php');
 $router->post('/credentials', 'controllers/credentials.php');
 $router->post('/debug_post.php', 'debug_post.php');
 

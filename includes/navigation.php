@@ -11,7 +11,8 @@
             <a class="nav-link" href="/SupporTracker/assets">Assets</a>
             <a class="nav-link" href="/SupporTracker/employees">Employees</a>
             <a class="nav-link" href="/SupporTracker/workorders">Work Orders</a>
-            <a class="nav-link" href="/SupporTracker/credentials">Credentials</a>
+            <a class="nav-link" href="/SupporTracker/projects">Projects</a>
+            <a class="nav-link" href="/SupporTracker/parts">Parts</a>
         </div>
         
         <div class="d-flex">
