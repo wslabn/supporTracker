@@ -6,10 +6,17 @@ $asset_filter = $_GET['asset_id'] ?? null;
 if ($_POST) {
     if (isset($_POST['add_workorder'])) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO work_orders (company_id, asset_id, title, description, priority, billable, estimated_hours, hourly_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO work_orders (company_id, asset_id, customer_name, customer_phone, customer_email, device_type, device_make, device_model, device_serial, title, description, priority, billable, estimated_hours, hourly_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
-                $_POST['company_id'],
+                empty($_POST['company_id']) ? null : $_POST['company_id'],
                 empty($_POST['asset_id']) ? null : $_POST['asset_id'],
+                $_POST['customer_name'] ?? null,
+                $_POST['customer_phone'] ?? null,
+                $_POST['customer_email'] ?? null,
+                $_POST['device_type'] ?? null,
+                $_POST['device_make'] ?? null,
+                $_POST['device_model'] ?? null,
+                $_POST['device_serial'] ?? null,
                 $_POST['title'],
                 $_POST['description'],
                 $_POST['priority'] ?? 'medium',
@@ -25,6 +32,20 @@ if ($_POST) {
                 exit;
             }
         }
+        
+        if (isset($_POST['ajax'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true]);
+            exit;
+        }
+        
+        header('Location: /SupporTracker/workorders');
+        exit;
+    }
+    
+    if (isset($_POST['delete_workorder'])) {
+        $stmt = $pdo->prepare("DELETE FROM work_orders WHERE id = ?");
+        $stmt->execute([$_POST['workorder_id']]);
         
         if (isset($_POST['ajax'])) {
             header('Content-Type: application/json');
@@ -131,7 +152,7 @@ $where_clause = $where_conditions ? "WHERE " . implode(" AND ", $where_condition
 $stmt = $pdo->prepare("
     SELECT wo.*, c.name as company_name, a.name as asset_name, a.asset_tag
     FROM work_orders wo 
-    JOIN companies c ON wo.company_id = c.id 
+    LEFT JOIN companies c ON wo.company_id = c.id 
     LEFT JOIN assets a ON wo.asset_id = a.id
     $where_clause
     ORDER BY wo.created_at DESC
