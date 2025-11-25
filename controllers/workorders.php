@@ -119,6 +119,12 @@ if ($asset_filter) {
     $params[] = $asset_filter;
 }
 
+// Filter by current location if set
+if (isset($_SESSION['current_location']) && $_SESSION['current_location']) {
+    $where_conditions[] = "wo.location_id = ?";
+    $params[] = $_SESSION['current_location'];
+}
+
 $where_clause = $where_conditions ? "WHERE " . implode(" AND ", $where_conditions) : "";
 
 // Get work orders with company and asset info

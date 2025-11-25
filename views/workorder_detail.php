@@ -3,9 +3,16 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-wrench"></i> Work Order #<?= $workorder['id'] ?></h5>
-                <button class="btn btn-sm btn-primary" onclick="editWorkOrder(<?= $workorder['id'] ?>)">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
+                <div>
+                    <button class="btn btn-sm btn-primary me-1" onclick="editWorkOrder(<?= $workorder['id'] ?>)">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <?php if ($workorder['billable'] && !$workorder['invoiced'] && in_array($workorder['status'], ['completed', 'closed'])): ?>
+                        <button class="btn btn-sm btn-success" onclick="createInvoice(<?= $workorder['id'] ?>, <?= $workorder['company_id'] ?>)">
+                            <i class="fas fa-file-invoice-dollar"></i> Invoice
+                        </button>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="card-body">
                 <table class="table table-sm">
@@ -459,6 +466,36 @@ function calculatePrice() {
 
 function addChecklist(workorderId) {
     alert('Checklist functionality will be implemented next');
+}
+
+function createInvoice(workorderId, companyId) {
+    if (confirm('Create invoice for this work order?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/SupporTracker/invoices';
+        
+        const companyInput = document.createElement('input');
+        companyInput.type = 'hidden';
+        companyInput.name = 'company_id';
+        companyInput.value = companyId;
+        
+        const woInput = document.createElement('input');
+        woInput.type = 'hidden';
+        woInput.name = 'work_order_ids[]';
+        woInput.value = workorderId;
+        
+        const submitInput = document.createElement('input');
+        submitInput.type = 'hidden';
+        submitInput.name = 'generate_invoice';
+        submitInput.value = '1';
+        
+        form.appendChild(companyInput);
+        form.appendChild(woInput);
+        form.appendChild(submitInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 function submitPartForm() {

@@ -4,7 +4,7 @@ require_once 'includes/template.php';
 require_once 'includes/router.php';
 
 if (!isset($_SESSION['admin_logged_in'])) {
-    header('Location: index.php');
+    include_once 'index.php';
     exit;
 }
 
