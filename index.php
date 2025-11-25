@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
         // Simple password check - replace with proper auth
         if ($_POST['password'] === 'admin123') {
             $_SESSION['admin_logged_in'] = true;
-            redirect('dashboard.php');
+            redirect('/SupporTracker/dashboard');
         } else {
             $error = "Invalid password";
         }
@@ -47,5 +47,5 @@ if (!isset($_SESSION['admin_logged_in'])) {
 }
 
 // Redirect to dashboard if already logged in
-redirect('dashboard.php');
+redirect('/SupporTracker/dashboard');
 ?>

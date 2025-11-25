@@ -47,7 +47,12 @@ try {
 
 // Helper Functions
 function redirect($url) {
-    header("Location: " . $url);
+    // Handle relative URLs
+    if (strpos($url, '/') === 0) {
+        header("Location: " . $url);
+    } else {
+        header("Location: " . $url);
+    }
     exit();
 }
 
@@ -76,4 +81,7 @@ function encryptPassword($password) {
 function decryptPassword($encrypted) {
     return openssl_decrypt($encrypted, 'AES-256-CBC', ENCRYPTION_KEY, 0, substr(md5(ENCRYPTION_KEY), 0, 16));
 }
+
+// Include template system
+require_once 'includes/template.php';
 ?>
