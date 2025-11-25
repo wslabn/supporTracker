@@ -5,7 +5,7 @@
                 <h5 class="modal-title"><?= isset($part) ? 'Edit' : 'Add' ?> Part/Equipment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="partForm">
+            <form id="partForm" onsubmit="return false;">
                 <div class="modal-body">
                     <?php if (isset($part)): ?>
                         <input type="hidden" name="part_id" value="<?= $part['id'] ?>">
@@ -139,7 +139,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><?= isset($part) ? 'Update' : 'Add' ?> Part</button>
+                    <button type="button" class="btn btn-primary" onclick="submitPartForm()"><?= isset($part) ? 'Update' : 'Add' ?> Part</button>
                 </div>
             </form>
         </div>
@@ -150,9 +150,53 @@
 // Calculate on load
 setTimeout(calculatePrice, 100);
 
-document.getElementById('partForm').addEventListener('submit', function(e) {
+function submitPartForm() {
+    console.log('submitPartForm called');
+    alert('Form submission started - check console');
+    
+    const form = document.getElementById('partForm');
+    const formData = new FormData(form);
+    formData.append('ajax', '1');
+    formData.append(<?= isset($part) ? "'update_part'" : "'add_part'" ?>, '1');
+    
+    console.log('Form data entries:', [...formData.entries()]);
+    
+    fetch('/SupporTracker/parts', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.text();
+    })
+    .then(text => {
+        console.log('Raw response:', text);
+        try {
+            const data = JSON.parse(text);
+            console.log('Parsed response:', data);
+            alert('Part added successfully!');
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            alert('Server error - Response was: ' + text.substring(0, 200));
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Network error: ' + error.message);
+    });
+}
+
+// Setup form listener immediately when script runs
+const form = document.getElementById('partForm');
+if (form) {
+    console.log('Setting up form event listener');
+    form.addEventListener('submit', function(e) {
     e.preventDefault();
-    console.log('Form submitted');
+    e.stopPropagation();
+    console.log('Form submitted - preventDefault called');
+    
+    // Add a delay to see if we reach this point
+    alert('Form submission started - check console');
     
     const formData = new FormData(this);
     formData.append('ajax', '1');
@@ -174,21 +218,19 @@ document.getElementById('partForm').addEventListener('submit', function(e) {
         try {
             const data = JSON.parse(text);
             console.log('Parsed response:', data);
-            if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('partModal')).hide();
-                location.reload();
-            } else {
-                alert('Error: ' + (data.error || 'Unknown error'));
-            }
+            console.log('SUCCESS - Part added!');
+            alert('Part added successfully! Check console for details.');
         } catch (e) {
             console.error('JSON parse error:', e);
             console.log('Response was not JSON:', text);
-            alert('Server error - check console');
+            alert('Server error - Response was: ' + text.substring(0, 200));
         }
     })
     .catch(error => {
         console.error('Fetch error:', error);
         alert('Network error: ' + error.message);
     });
-});
+} else {
+    console.log('partForm not found when setting up event listener');
+}
 </script>

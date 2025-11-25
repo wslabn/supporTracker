@@ -90,6 +90,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#checklist">
+                    <i class="fas fa-clipboard-check"></i> Checklist
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#timeline">
                     <i class="fas fa-clock"></i> Timeline
                 </a>
@@ -218,7 +223,10 @@
                                 <?php foreach ($parts as $part): ?>
                                 <tr>
                                     <td>
-                                        <?= htmlspecialchars($part['description']) ?>
+                                        <strong><?= htmlspecialchars($part['item_name']) ?></strong>
+                                        <?php if ($part['description']): ?>
+                                            <br><small class="text-muted"><?= htmlspecialchars($part['description']) ?></small>
+                                        <?php endif; ?>
                                         <?php if ($part['part_number']): ?>
                                             <br><small class="text-muted">P/N: <?= htmlspecialchars($part['part_number']) ?></small>
                                         <?php endif; ?>
@@ -249,6 +257,20 @@
                         <?php else: ?>
                         <p class="text-muted p-3">No parts ordered for this work order.</p>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="checklist">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <h6>Technician Checklist</h6>
+                        <button class="btn btn-sm btn-success" onclick="addChecklist(<?= $workorder_id ?>)">
+                            <i class="fas fa-plus"></i> Add Checklist
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Checklist functionality coming soon...</p>
                     </div>
                 </div>
             </div>
@@ -287,6 +309,34 @@
                                         'title' => 'Task Completed: ' . $task['task_name'],
                                         'color' => 'success',
                                         'icon' => 'fas fa-check'
+                                    ];
+                                }
+                            }
+                            
+                            // Parts events
+                            foreach ($parts as $part) {
+                                $timeline_events[] = [
+                                    'date' => $part['created_at'],
+                                    'title' => 'Part Added: ' . $part['item_name'],
+                                    'color' => 'secondary',
+                                    'icon' => 'fas fa-cogs'
+                                ];
+                                
+                                if ($part['status'] == 'received') {
+                                    $timeline_events[] = [
+                                        'date' => $part['updated_at'] ?? $part['created_at'],
+                                        'title' => 'Part Received: ' . $part['item_name'],
+                                        'color' => 'warning',
+                                        'icon' => 'fas fa-box'
+                                    ];
+                                }
+                                
+                                if ($part['status'] == 'installed') {
+                                    $timeline_events[] = [
+                                        'date' => $part['updated_at'] ?? $part['created_at'],
+                                        'title' => 'Part Installed: ' . $part['item_name'],
+                                        'color' => 'success',
+                                        'icon' => 'fas fa-wrench'
                                     ];
                                 }
                             }
@@ -405,6 +455,51 @@ function calculatePrice() {
     totalPriceEl.value = totalPrice.toFixed(2);
     
     console.log('Updated fields');
+}
+
+function addChecklist(workorderId) {
+    alert('Checklist functionality will be implemented next');
+}
+
+function submitPartForm() {
+    console.log('submitPartForm called');
+    alert('Form submission started - check console');
+    
+    const form = document.getElementById('partForm');
+    const formData = new FormData(form);
+    formData.append('ajax', '1');
+    formData.append('add_part', '1');
+    
+    console.log('Form data entries:', [...formData.entries()]);
+    
+    fetch('/SupporTracker/parts', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.text();
+    })
+    .then(text => {
+        console.log('Raw response:', text);
+        try {
+            const data = JSON.parse(text);
+            console.log('Parsed response:', data);
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('partModal')).hide();
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            alert('Server error - Response was: ' + text.substring(0, 200));
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Network error: ' + error.message);
+    });
 }
 
 function editWorkOrder(id) {

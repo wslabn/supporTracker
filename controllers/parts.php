@@ -1,11 +1,20 @@
 <?php
+// Debug: Log all requests to parts controller
+if ($_POST) {
+    file_put_contents('/tmp/parts_debug.log', date('Y-m-d H:i:s') . " POST: " . print_r($_POST, true) . "\n", FILE_APPEND);
+}
+
 $company_filter = $_GET['company_id'] ?? null;
 $project_filter = $_GET['project_id'] ?? null;
 $workorder_filter = $_GET['workorder_id'] ?? null;
 
 // Handle form submissions
 if ($_POST) {
+    error_log('Parts controller POST data: ' . print_r($_POST, true));
+    
     if (isset($_POST['add_part'])) {
+        file_put_contents('/tmp/parts_debug.log', "REACHED ADD_PART SECTION\n", FILE_APPEND);
+        error_log('Processing add_part request');
         // Calculate totals
         $quantity = floatval($_POST['quantity']);
         $unit_cost = floatval($_POST['unit_cost']);
@@ -14,29 +23,43 @@ if ($_POST) {
         $total_cost = $quantity * $unit_cost;
         $total_price = $quantity * $unit_price;
         
-        $stmt = $pdo->prepare("INSERT INTO parts_orders (company_id, item_name, project_id, work_order_id, asset_id, description, part_number, quantity, unit_cost, markup_percent, unit_price, total_cost, total_price, vendor, vendor_url, order_date, expected_date, status, billable, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $_POST['company_id'],
-            $_POST['item_name'],
-            empty($_POST['project_id']) ? null : $_POST['project_id'],
-            empty($_POST['work_order_id']) ? null : $_POST['work_order_id'],
-            empty($_POST['asset_id']) ? null : $_POST['asset_id'],
-            $_POST['description'] ?? '',
-            $_POST['part_number'],
-            $quantity,
-            $unit_cost,
-            $markup_percent,
-            $unit_price,
-            $total_cost,
-            $total_price,
-            $_POST['vendor'],
-            $_POST['vendor_url'],
-            $_POST['order_date'] ?: null,
-            $_POST['expected_date'] ?: null,
-            $_POST['status'] ?? 'pending',
-            isset($_POST['billable']) ? 1 : 0,
-            $_POST['notes'] ?? ''
-        ]);
+        try {
+            $stmt = $pdo->prepare("INSERT INTO parts_orders (company_id, item_name, project_id, work_order_id, asset_id, description, part_number, quantity, unit_cost, markup_percent, unit_price, total_cost, total_price, vendor, vendor_url, order_date, expected_date, status, billable, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            
+            $params = [
+                $_POST['company_id'],
+                $_POST['item_name'],
+                empty($_POST['project_id']) ? null : $_POST['project_id'],
+                empty($_POST['work_order_id']) ? null : $_POST['work_order_id'],
+                empty($_POST['asset_id']) ? null : $_POST['asset_id'],
+                $_POST['description'] ?? '',
+                $_POST['part_number'] ?? '',
+                $quantity,
+                $unit_cost,
+                $markup_percent,
+                $unit_price,
+                $total_cost,
+                $total_price,
+                $_POST['vendor'] ?? '',
+                $_POST['vendor_url'] ?? '',
+                $_POST['order_date'] ?: null,
+                $_POST['expected_date'] ?: null,
+                $_POST['status'] ?? 'pending',
+                isset($_POST['billable']) ? 1 : 0,
+                $_POST['notes'] ?? ''
+            ];
+            
+            error_log('Insert params: ' . print_r($params, true));
+            $stmt->execute($params);
+            error_log('Part inserted successfully with ID: ' . $pdo->lastInsertId());
+        } catch (Exception $e) {
+            error_log('Part insert error: ' . $e->getMessage());
+            if (isset($_POST['ajax'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                exit;
+            }
+        }
         
         if (isset($_POST['ajax'])) {
             header('Content-Type: application/json');
