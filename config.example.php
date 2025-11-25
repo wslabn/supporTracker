@@ -1,28 +1,29 @@
 <?php
-// SupportTracker Configuration
+// SupportTracker Configuration Example
+// Copy this file to config.php and update with your actual values
 
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'supporttracker');
-define('DB_USER', 'supporttracker');
-define('DB_PASS', '3Ga55ociates1nc!');
+define('DB_NAME', 'your_database_name');
+define('DB_USER', 'your_database_user');
+define('DB_PASS', 'your_database_password');
 
 // Application Settings
 define('APP_NAME', 'SupportTracker');
 define('APP_VERSION', '1.0.0');
-define('BASE_URL', 'http://192.168.200.146');
+define('BASE_URL', 'http://your-domain.com');
 
 // Security Settings
 define('SESSION_TIMEOUT', 3600); // 1 hour
-define('ENCRYPTION_KEY', 'change-this-to-random-32-char-key');
+define('ENCRYPTION_KEY', 'generate-random-32-character-key-here'); // Use: openssl_rand_pseudo_bytes(32)
 
 // Email Settings (for invoice delivery)
-define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_HOST', 'your-smtp-host');
 define('SMTP_PORT', 587);
-define('SMTP_USER', 'your-email@gmail.com');
-define('SMTP_PASS', 'your-app-password');
-define('FROM_EMAIL', 'your-email@gmail.com');
-define('FROM_NAME', 'SupportTracker System');
+define('SMTP_USER', 'your-email@domain.com');
+define('SMTP_PASS', 'your-smtp-password');
+define('FROM_EMAIL', 'your-email@domain.com');
+define('FROM_NAME', 'Your Company Name');
 
 // Business Settings
 define('DEFAULT_HOURLY_RATE', 75.00);
