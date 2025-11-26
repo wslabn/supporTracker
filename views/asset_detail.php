@@ -24,6 +24,14 @@
                             <?= htmlspecialchars($asset['status']) ?>
                         </span>
                     </td></tr>
+                    <?php if (!empty($asset['device_password'])): ?>
+                    <tr><td><strong>Device Password:</strong></td><td>
+                        <span class="text-success"><i class="bi bi-shield-check me-1"></i>Available</span>
+                        <button class="btn btn-sm btn-outline-primary ms-2" onclick="showPassword(this, '<?= htmlspecialchars($asset['device_password']) ?>')">
+                            <i class="bi bi-eye"></i> Show
+                        </button>
+                    </td></tr>
+                    <?php endif; ?>
                 </table>
                 <?php if ($asset['notes']): ?>
                 <div class="mt-3">
@@ -64,20 +72,26 @@
                             <thead>
                                 <tr>
                                     <th>Type</th>
+                                    <th>Service</th>
                                     <th>Username</th>
-                                    <th>Description</th>
+                                    <th>Password</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($credentials as $cred): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($cred['type']) ?></td>
+                                    <td><span class="badge bg-secondary"><?= ucfirst($cred['credential_type']) ?></span></td>
+                                    <td><?= htmlspecialchars($cred['service_name']) ?></td>
                                     <td><?= htmlspecialchars($cred['username']) ?></td>
-                                    <td><?= htmlspecialchars($cred['description']) ?></td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary" onclick="editCredential(<?= $cred['id'] ?>)">
-                                            <i class="fas fa-edit"></i>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="showCredentialPassword(this, '<?= htmlspecialchars($cred['password']) ?>')">
+                                            <i class="bi bi-eye"></i> Show
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteCredential(<?= $cred['id'] ?>)">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -197,12 +211,68 @@ function setupAssetForm() {
 }
 
 function addCredential(assetId) {
-    fetch(`/SupporTracker/credentials?action=add&asset_id=${assetId}`)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('modalContainer').innerHTML = html;
-            new bootstrap.Modal(document.querySelector('#credentialModal')).show();
+    const modal = `
+        <div class="modal fade" id="credentialModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Credential</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="credentialForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="asset_id" value="${assetId}">
+                            <div class="mb-3">
+                                <label class="form-label">Type</label>
+                                <select class="form-select" name="credential_type" required>
+                                    <option value="device">Device Login</option>
+                                    <option value="email">Email Account</option>
+                                    <option value="software">Software/App</option>
+                                    <option value="network">WiFi/Network</option>
+                                    <option value="cloud">Cloud Service</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Service Name</label>
+                                <input type="text" class="form-control" name="service_name" required placeholder="e.g., Gmail, Windows Login, WiFi">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" name="username" placeholder="Optional">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Credential</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('modalContainer').innerHTML = modal;
+    const modalEl = new bootstrap.Modal(document.querySelector('#credentialModal'));
+    modalEl.show();
+    
+    document.getElementById('credentialForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.append('add_credential', '1');
+        
+        fetch('/SupporTracker/credentials', {
+            method: 'POST',
+            body: formData
+        })
+        .then(() => {
+            modalEl.hide();
+            location.reload();
         });
+    });
 }
 
 function editCredential(id) {
@@ -254,6 +324,38 @@ function setupWorkOrderForm() {
                 location.reload();
             });
         });
+    }
+}
+
+function showPassword(button, password) {
+    const isShowing = button.innerHTML.includes('Hide');
+    if (isShowing) {
+        button.innerHTML = '<i class="bi bi-eye"></i> Show';
+        button.previousElementSibling.innerHTML = '<i class="bi bi-shield-check me-1"></i>Available';
+    } else {
+        button.innerHTML = '<i class="bi bi-eye-slash"></i> Hide';
+        button.previousElementSibling.innerHTML = '<code>' + password + '</code>';
+    }
+}
+
+function showCredentialPassword(button, password) {
+    const isShowing = button.innerHTML.includes('Hide');
+    if (isShowing) {
+        button.innerHTML = '<i class="bi bi-eye"></i> Show';
+    } else {
+        button.innerHTML = '<i class="bi bi-eye-slash"></i> Hide';
+        button.setAttribute('title', password);
+        alert('Password: ' + password);
+        setTimeout(() => {
+            button.innerHTML = '<i class="bi bi-eye"></i> Show';
+        }, 3000);
+    }
+}
+
+function deleteCredential(id) {
+    if (confirm('Delete this credential?')) {
+        fetch('/SupporTracker/credentials?action=delete&id=' + id, {method: 'POST'})
+        .then(() => location.reload());
     }
 }
 </script>

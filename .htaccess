@@ -1,5 +1,9 @@
 RewriteEngine On
+
+# Skip portal directory entirely
+RewriteRule ^portal/ - [L]
+
+# Main app routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/SupporTracker/portal
 RewriteRule ^(.*)$ app.php [QSA,L]

@@ -69,6 +69,28 @@
                         <textarea class="form-control" name="description" rows="4" placeholder="Detailed description of the problem, symptoms, and any troubleshooting already attempted"></textarea>
                     </div>
                     
+                    <div id="passwordSection" class="mb-3" style="display: none;">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-key me-2"></i>Device Password Update</h6>
+                                <p class="text-muted small mb-2">If the device password has changed since last service, update it here:</p>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="password" class="form-control" name="updated_device_password" placeholder="New device password or PIN">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox" name="password_changed" id="passwordChanged">
+                                            <label class="form-check-label" for="passwordChanged">
+                                                Password changed
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -144,4 +166,14 @@ function loadCustomerAssets() {
         }
     }
 }
+
+// Show/hide password section when asset is selected
+document.getElementById('assetId').addEventListener('change', function() {
+    const passwordSection = document.getElementById('passwordSection');
+    if (this.value) {
+        passwordSection.style.display = 'block';
+    } else {
+        passwordSection.style.display = 'none';
+    }
+});
 </script>

@@ -56,6 +56,13 @@
                         </button>
                     </li>
                     <?php endif; ?>
+                    <?php if ($credentials || $ticket['asset_id']): ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="credentials-tab" data-bs-toggle="tab" data-bs-target="#credentials" type="button" role="tab">
+                            <i class="bi bi-key me-1"></i>Device Access
+                        </button>
+                    </li>
+                    <?php endif; ?>
                     <?php if (PORTAL_MESSAGING_ENABLED): ?>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab">
@@ -165,6 +172,85 @@
                         <?php else: ?>
                             <p class="text-muted">No messages yet. Send a message to communicate with your technician.</p>
                         <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <!-- Credentials Tab -->
+                    <?php if ($credentials || $ticket['asset_id']): ?>
+                    <div class="tab-pane fade" id="credentials" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Device Access Information</h6>
+                                <?php if ($credentials): ?>
+                                    <?php foreach ($credentials as $cred): ?>
+                                    <div class="card mb-2">
+                                        <div class="card-body py-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-2">
+                                                    <span class="badge bg-secondary"><?= ucfirst($cred['credential_type']) ?></span>
+                                                </div>
+                                                <div class="col-2">
+                                                    <strong><?= htmlspecialchars($cred['username']) ?></strong>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="password" class="form-control" value="<?= htmlspecialchars($cred['password']) ?>" readonly>
+                                                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-3">
+                                                    <small class="text-muted"><?= htmlspecialchars($cred['notes'] ?? '') ?></small>
+                                                </div>
+                                                <div class="col-2">
+                                                    <small class="text-muted"><?= date('M j', strtotime($cred['created_at'])) ?></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="text-muted">No device access information available yet.</p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Add Access Info</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="credential-message"></div>
+                                        <form method="POST">
+                                            <input type="hidden" name="add_credential" value="1">
+                                            <input type="hidden" name="asset_id" value="<?= $ticket['asset_id'] ?>">
+                                            <div class="mb-2">
+                                                <select class="form-select form-select-sm" name="credential_type" required>
+                                                    <option value="">Type...</option>
+                                                    <option value="admin">Admin</option>
+                                                    <option value="user">User</option>
+                                                    <option value="wifi">WiFi</option>
+                                                    <option value="email">Email</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-2">
+                                                <input type="text" class="form-control form-control-sm" name="username" placeholder="Username" required>
+                                            </div>
+                                            <div class="mb-2">
+                                                <input type="password" class="form-control form-control-sm" name="password" placeholder="Password" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <input type="text" class="form-control form-control-sm" name="notes" placeholder="Notes (optional)">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                                <i class="bi bi-plus-circle me-1"></i>Add
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                 </div>

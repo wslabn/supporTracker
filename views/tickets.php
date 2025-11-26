@@ -29,6 +29,15 @@
                         <?= ucfirst($ticket['priority']) ?>
                     </span>
                     <br>
+                    <small class="text-muted" style="font-size: 0.7rem;">
+                        <?php 
+                        require_once 'includes/priority-helper.php';
+                        echo formatResponseTime(getPriorityResponseTime($pdo, $ticket['priority'], $ticket['location_id'] ?? null));
+                        ?> response
+                    </small>
+                    <br>
+
+                    <br>
                     <span class="badge bg-<?= 
                         $ticket['status'] === 'resolved' ? 'success' : 
                         ($ticket['status'] === 'in_progress' ? 'warning' : 
@@ -80,14 +89,7 @@
                     </small>
                 </div>
                 
-                <?php if ($ticket['sla_hours']): ?>
-                <div class="mb-2">
-                    <small class="text-muted">
-                        <i class="bi bi-stopwatch me-1"></i>
-                        SLA: <?= $ticket['sla_hours'] ?> hours
-                    </small>
-                </div>
-                <?php endif; ?>
+
                 
                 <?php if ($ticket['description']): ?>
                 <p class="card-text small text-muted mt-2">

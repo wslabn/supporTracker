@@ -13,7 +13,7 @@ if ($customerId) {
 if ($_POST) {
     if (isset($_POST['create_asset'])) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO assets (customer_id, category_id, name, model, serial_number, vendor, version, location, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO assets (customer_id, category_id, name, model, serial_number, vendor, version, location, status, device_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $_POST['customer_id'],
                 $_POST['category_id'],
@@ -23,7 +23,8 @@ if ($_POST) {
                 $_POST['vendor'],
                 $_POST['version'],
                 $_POST['location'],
-                $_POST['status']
+                $_POST['status'],
+                $_POST['device_password'] ?? null
             ]);
             
             header('Location: /SupporTracker/assets');

@@ -19,7 +19,7 @@ if (!$asset) {
 }
 
 // Get credentials for this asset
-$stmt = $pdo->prepare("SELECT * FROM asset_credentials WHERE asset_id = ? ORDER BY created_at DESC");
+$stmt = $pdo->prepare("SELECT * FROM asset_credentials WHERE asset_id = ? ORDER BY credential_type, service_name");
 $stmt->execute([$asset_id]);
 $credentials = $stmt->fetchAll();
 

@@ -32,7 +32,11 @@ if ($_POST) {
             'default_tax_rate' => $_POST['default_tax_rate'],
             'invoice_due_days' => $_POST['invoice_due_days'],
             'portal_enabled' => $portal_enabled,
-            'customer_messaging_enabled' => $messaging_enabled
+            'customer_messaging_enabled' => $messaging_enabled,
+            'priority_low_hours' => $_POST['priority_low_hours'],
+            'priority_medium_hours' => $_POST['priority_medium_hours'],
+            'priority_high_hours' => $_POST['priority_high_hours'],
+            'priority_urgent_hours' => $_POST['priority_urgent_hours']
         ];
         
         foreach ($settings as $key => $value) {
@@ -59,13 +63,17 @@ if ($_POST) {
     }
     
     if (isset($_POST['update_location'])) {
-        $stmt = $pdo->prepare("UPDATE locations SET name = ?, address = ?, phone = ?, email = ?, tax_rate = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE locations SET name = ?, address = ?, phone = ?, email = ?, tax_rate = ?, priority_low_hours = ?, priority_medium_hours = ?, priority_high_hours = ?, priority_urgent_hours = ? WHERE id = ?");
         $stmt->execute([
             $_POST['name'],
             $_POST['address'],
             $_POST['phone'],
             $_POST['email'],
             $_POST['tax_rate'],
+            $_POST['priority_low_hours'] ?: null,
+            $_POST['priority_medium_hours'] ?: null,
+            $_POST['priority_high_hours'] ?: null,
+            $_POST['priority_urgent_hours'] ?: null,
             $_POST['location_id']
         ]);
         $success = "Location updated successfully!";
@@ -136,7 +144,11 @@ $defaults = [
     'default_tax_rate' => '0.00',
     'invoice_due_days' => '30',
     'portal_enabled' => '1',
-    'customer_messaging_enabled' => '1'
+    'customer_messaging_enabled' => '1',
+    'priority_low_hours' => '24',
+    'priority_medium_hours' => '8',
+    'priority_high_hours' => '2',
+    'priority_urgent_hours' => '1'
 ];
 
 foreach ($defaults as $key => $value) {

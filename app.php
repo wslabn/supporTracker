@@ -15,11 +15,7 @@ if (empty($path)) {
 }
 
 // Handle special routes
-if ($path === 'portal' || strpos($path, 'portal/') === 0) {
-    // Redirect to portal directory
-    include 'portal/index.php';
-    exit;
-} elseif ($path === 'assets/create') {
+if ($path === 'assets/create') {
     $controllerFile = "controllers/asset-create.php";
 } elseif ($path === 'tickets/create') {
     $controllerFile = "controllers/ticket-create.php";

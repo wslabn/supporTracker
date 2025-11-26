@@ -79,6 +79,13 @@
                             <i class="bi bi-gear me-1"></i>Parts
                         </button>
                     </li>
+                    <?php if ($ticket['asset_id']): ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="credentials-tab" data-bs-toggle="tab" data-bs-target="#credentials" type="button" role="tab">
+                            <i class="bi bi-key me-1"></i>Credentials
+                        </button>
+                    </li>
+                    <?php endif; ?>
                     <?php if ($messagingEnabled): ?>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab">
@@ -106,7 +113,8 @@
                                         <strong><?= htmlspecialchars($update['technician_name']) ?></strong>
                                         <span class="badge bg-<?= 
                                             $update['update_type'] === 'time_log' ? 'primary' : 
-                                            ($update['update_type'] === 'status_change' ? 'warning' : 'secondary') 
+                                            ($update['update_type'] === 'status_change' ? 'warning' : 
+                                            ($update['update_type'] === 'priority_change' ? 'info' : 'secondary')) 
                                         ?> ms-2">
                                             <?= ucfirst(str_replace('_', ' ', $update['update_type'])) ?>
                                         </span>
@@ -279,6 +287,92 @@
                         <?php endif; ?>
                     </div>
                     
+                    <!-- Credentials Tab -->
+                    <?php if ($ticket['asset_id']): ?>
+                    <div class="tab-pane fade" id="credentials" role="tabpanel">
+                        <!-- Add Credential Form -->
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#addCredentialCollapse" style="cursor: pointer;">
+                                <h6 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Credential</h6>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse" id="addCredentialCollapse">
+                                <div class="card-body">
+                                    <form method="POST">
+                                        <input type="hidden" name="add_ticket_credential" value="1">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <select class="form-select" name="credential_type" required>
+                                                    <option value="device">Device Login</option>
+                                                    <option value="email">Email Account</option>
+                                                    <option value="software">Software/App</option>
+                                                    <option value="network">WiFi/Network</option>
+                                                    <option value="cloud">Cloud Service</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control" name="service_name" placeholder="Service name" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="text" class="form-control" name="username" placeholder="Username">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="password" class="form-control" name="password" placeholder="Password" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="submit" class="btn btn-primary w-100">
+                                                    <i class="bi bi-plus me-1"></i>Add
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Credentials List -->
+                        <?php if ($assetCredentials): ?>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Service</th>
+                                        <th>Username</th>
+                                        <th>Password</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($assetCredentials as $cred): ?>
+                                    <tr>
+                                        <td><span class="badge bg-secondary"><?= ucfirst($cred['credential_type']) ?></span></td>
+                                        <td><?= htmlspecialchars($cred['service_name']) ?></td>
+                                        <td><?= htmlspecialchars($cred['username']) ?></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="showTicketPassword(this, '<?= htmlspecialchars($cred['password']) ?>')">
+                                                <i class="bi bi-eye"></i> Show
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this credential?')">
+                                                <input type="hidden" name="delete_credential" value="<?= $cred['id'] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php else: ?>
+                        <p class="text-muted">No credentials stored for this asset. Add credentials above.</p>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
 
                     <!-- Messages Tab -->
                     <?php if ($messagingEnabled): ?>
@@ -569,6 +663,7 @@
                             <option value="note">Work Note</option>
                             <option value="time_log">Time Log</option>
                             <option value="status_change">Status Change</option>
+                            <option value="priority_change">Priority Change</option>
                         </select>
                     </div>
                     
@@ -591,6 +686,17 @@
                             <option value="waiting">Waiting (Customer/Parts)</option>
                             <option value="resolved">Resolved</option>
                             <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Change Priority To</label>
+                        <select class="form-select" name="new_priority">
+                            <option value="">Keep current priority</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
                         </select>
                     </div>
                     
@@ -632,6 +738,19 @@ function calculateNewSellPrice() {
     if (cost > 0 && markup > 0) {
         const sellPrice = cost * (1 + markup / 100);
         document.getElementById('new_sell').value = sellPrice.toFixed(2);
+    }
+}
+
+function showTicketPassword(button, password) {
+    const isShowing = button.innerHTML.includes('Hide');
+    if (isShowing) {
+        button.innerHTML = '<i class="bi bi-eye"></i> Show';
+    } else {
+        button.innerHTML = '<i class="bi bi-eye-slash"></i> Hide';
+        alert('Password: ' + password);
+        setTimeout(() => {
+            button.innerHTML = '<i class="bi bi-eye"></i> Show';
+        }, 3000);
     }
 }
 </script>

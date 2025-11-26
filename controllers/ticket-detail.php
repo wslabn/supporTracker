@@ -68,6 +68,29 @@ if ($_POST) {
         exit;
     }
     
+    if (isset($_POST['add_ticket_credential'])) {
+        if ($ticket['asset_id']) {
+            $stmt = $pdo->prepare("INSERT INTO asset_credentials (asset_id, credential_type, service_name, username, password) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $ticket['asset_id'],
+                $_POST['credential_type'],
+                $_POST['service_name'],
+                $_POST['username'],
+                $_POST['password']
+            ]);
+        }
+        header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
+        exit;
+    }
+    
+    if (isset($_POST['delete_credential'])) {
+        $credential_id = (int)$_POST['delete_credential'];
+        $stmt = $pdo->prepare("DELETE FROM asset_credentials WHERE id = ?");
+        $stmt->execute([$credential_id]);
+        header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
+        exit;
+    }
+    
     if (isset($_POST['add_update'])) {
         $stmt = $pdo->prepare("INSERT INTO ticket_updates (ticket_id, technician_id, update_type, content, hours_logged, is_internal) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([
@@ -83,6 +106,12 @@ if ($_POST) {
         if ($_POST['new_status']) {
             $stmt = $pdo->prepare("UPDATE tickets SET status = ? WHERE id = ?");
             $stmt->execute([$_POST['new_status'], $ticketId]);
+        }
+        
+        // Update ticket priority if provided
+        if ($_POST['new_priority']) {
+            $stmt = $pdo->prepare("UPDATE tickets SET priority = ? WHERE id = ?");
+            $stmt->execute([$_POST['new_priority'], $ticketId]);
         }
         
         header("Location: /SupporTracker/ticket-detail?id=$ticketId");
@@ -157,11 +186,23 @@ if ($messagingEnabled) {
     $pdo->prepare("UPDATE ticket_messages SET is_read = TRUE, read_at = NOW() WHERE ticket_id = ? AND sender_type = 'customer' AND is_read = FALSE")->execute([$ticketId]);
 }
 
+// Get asset credentials if ticket has an asset
+$assetCredentials = [];
+if ($ticket['asset_id']) {
+    $assetCredentials = $pdo->prepare("
+        SELECT * FROM asset_credentials
+        WHERE asset_id = ?
+        ORDER BY credential_type, service_name
+    ");
+    $assetCredentials->execute([$ticket['asset_id']]);
+    $assetCredentials = $assetCredentials->fetchAll();
+}
+
 renderModernPage(
     'Ticket Details - SupportTracker',
     'Ticket #' . ($ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT)),
     'ticket-detail.php',
-    compact('ticket', 'updates', 'parts', 'messages', 'messagingEnabled'),
+    compact('ticket', 'updates', 'parts', 'messages', 'messagingEnabled', 'assetCredentials'),
     ''
 );
 ?>

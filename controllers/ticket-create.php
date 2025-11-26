@@ -32,6 +32,16 @@ if ($_POST) {
             
             $ticketId = $pdo->lastInsertId();
             
+            // Update asset password if provided and checkbox is checked
+            if (!empty($_POST['asset_id']) && isset($_POST['password_changed']) && !empty($_POST['updated_device_password'])) {
+                $stmt = $pdo->prepare("UPDATE assets SET device_password = ? WHERE id = ?");
+                $stmt->execute([$_POST['updated_device_password'], $_POST['asset_id']]);
+                
+                // Add ticket update about password change
+                $stmt = $pdo->prepare("INSERT INTO ticket_updates (ticket_id, update_type, content, is_internal) VALUES (?, 'customer_update', 'Device password updated by technician', 0)");
+                $stmt->execute([$ticketId]);
+            }
+            
             if (isset($_POST['print_receipt'])) {
                 header('Location: /SupporTracker/receipt?id=' . $ticketId);
             } else {

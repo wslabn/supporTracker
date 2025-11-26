@@ -60,7 +60,7 @@ renderModernPage(
     'Tickets - SupportTracker',
     'Support Tickets',
     'tickets.php',
-    compact('tickets', 'customers', 'technicians'),
+    compact('tickets', 'customers', 'technicians', 'pdo'),
     $headerActions
 );
 ?>

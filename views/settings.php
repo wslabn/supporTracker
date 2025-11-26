@@ -127,6 +127,37 @@
                             });
                             </script>
                             
+                            <h6 class="mt-4">Priority Response Times</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Low Priority (hours)</label>
+                                        <input type="number" name="priority_low_hours" class="form-control" value="<?= $current_settings['priority_low_hours'] ?>" min="1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Medium Priority (hours)</label>
+                                        <input type="number" name="priority_medium_hours" class="form-control" value="<?= $current_settings['priority_medium_hours'] ?>" min="1" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">High Priority (hours)</label>
+                                        <input type="number" name="priority_high_hours" class="form-control" value="<?= $current_settings['priority_high_hours'] ?>" min="1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Urgent Priority (hours)</label>
+                                        <input type="number" name="priority_urgent_hours" class="form-control" value="<?= $current_settings['priority_urgent_hours'] ?>" min="1" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted">Default response times for all locations. Individual locations can override these settings.</small>
+                            
                             <h6 class="mt-4">Invoice Settings</h6>
                             <div class="mb-3">
                                 <label class="form-label">Invoice Due Days</label>
@@ -167,6 +198,7 @@
                                                     <th>Name</th>
                                                     <th>Phone</th>
                                                     <th>Tax Rate</th>
+                                                    <th>Priority Overrides</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
@@ -176,6 +208,13 @@
                                                     <td><?= htmlspecialchars($location['name']) ?></td>
                                                     <td><?= htmlspecialchars($location['phone']) ?></td>
                                                     <td><?= $location['tax_rate'] ?>%</td>
+                                                    <td>
+                                                        <?php if ($location['priority_urgent_hours'] || $location['priority_high_hours'] || $location['priority_medium_hours'] || $location['priority_low_hours']): ?>
+                                                            <small class="text-success">Custom</small>
+                                                        <?php else: ?>
+                                                            <small class="text-muted">Default</small>
+                                                        <?php endif; ?>
+                                                    </td>
                                                     <td>
                                                         <button class="btn btn-sm btn-outline-primary" onclick="editLocation(<?= $location['id'] ?>)">Edit</button>
                                                     </td>
@@ -211,6 +250,38 @@
                                         <label class="form-label">Tax Rate (%)</label>
                                         <input type="number" name="tax_rate" class="form-control" step="0.01" value="0">
                                     </div>
+                                    
+                                    <h6 class="mt-3">Priority Response Times (Optional)</h6>
+                                    <small class="text-muted d-block mb-2">Leave blank to use company defaults</small>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <label class="form-label form-label-sm">Low (hrs)</label>
+                                                <input type="number" name="priority_low_hours" class="form-control form-control-sm" placeholder="<?= $current_settings['priority_low_hours'] ?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <label class="form-label form-label-sm">Medium (hrs)</label>
+                                                <input type="number" name="priority_medium_hours" class="form-control form-control-sm" placeholder="<?= $current_settings['priority_medium_hours'] ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                                <label class="form-label form-label-sm">High (hrs)</label>
+                                                <input type="number" name="priority_high_hours" class="form-control form-control-sm" placeholder="<?= $current_settings['priority_high_hours'] ?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                                <label class="form-label form-label-sm">Urgent (hrs)</label>
+                                                <input type="number" name="priority_urgent_hours" class="form-control form-control-sm" placeholder="<?= $current_settings['priority_urgent_hours'] ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <button type="submit" name="add_location" class="btn btn-success w-100">
                                         <i class="bi bi-plus me-1"></i>Add Location
                                     </button>

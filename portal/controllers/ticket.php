@@ -1,12 +1,31 @@
 <?php
+echo "<script>console.log('TICKET CONTROLLER LOADED');</script>";
 $ticket_id = $_GET['id'] ?? null;
 if (!$ticket_id) {
     header('Location: /SupporTracker/portal/');
     exit;
 }
 
+// Handle credential form submission
+if ($_POST && isset($_POST['add_credential'])) {
+    echo "<script>console.log('CREDENTIAL FORM SUBMITTED');</script>";
+    $asset_id = $_POST['asset_id'] ?? null;
+    $credential_type = $_POST['credential_type'] ?? null;
+    $username = $_POST['username'] ?? null;
+    $password = $_POST['password'] ?? null;
+    $notes = $_POST['notes'] ?? null;
+    
+    if ($asset_id && $credential_type && $username && $password) {
+        $stmt = $pdo->prepare("INSERT INTO asset_credentials (asset_id, credential_type, username, password, notes) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$asset_id, $credential_type, $username, $password, $notes]);
+        header("Location: /SupporTracker/portal/ticket?id=" . $ticket_id);
+        exit;
+    }
+}
+
 // Handle message sending
 if ($_POST && isset($_POST['send_message']) && PORTAL_MESSAGING_ENABLED) {
+    echo "<script>console.log('MESSAGE FORM SUBMITTED');</script>";
     $message = trim($_POST['message']);
     $customer_name = trim($_POST['customer_name']);
     
@@ -78,5 +97,15 @@ if (PORTAL_MESSAGING_ENABLED) {
     $pdo->prepare("UPDATE ticket_messages SET is_read = TRUE, read_at = NOW() WHERE ticket_id = ? AND sender_type = 'technician' AND is_read = FALSE")->execute([$ticket_id]);
 }
 
-renderPortalPage('Repair Status - SupportTracker', 'ticket.php', compact('ticket', 'location', 'updates', 'parts', 'messages'));
+// Get asset credentials if asset exists
+$credentials = [];
+if ($ticket['asset_id']) {
+    $stmt = $pdo->prepare("SELECT * FROM asset_credentials WHERE asset_id = ? ORDER BY credential_type, created_at DESC");
+    $stmt->execute([$ticket['asset_id']]);
+    $credentials = $stmt->fetchAll();
+}
+
+echo "<script>console.log('RENDERING TICKET PAGE');</script>";
+renderPortalPage('Repair Status - SupportTracker', 'ticket.php', compact('ticket', 'location', 'updates', 'parts', 'messages', 'credentials'));
+?>
 ?>

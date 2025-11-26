@@ -60,6 +60,7 @@
                                     <th>Ticket #</th>
                                     <th>Customer</th>
                                     <th>Subject</th>
+                                    <th>Priority</th>
                                     <th>Status</th>
                                     <th>Technician</th>
                                     <th>Created</th>
@@ -78,6 +79,23 @@
                                     </td>
                                     <td><?= htmlspecialchars($ticket['customer_name']) ?></td>
                                     <td><?= htmlspecialchars($ticket['title']) ?></td>
+                                    <td>
+                                        <span class="badge bg-<?= 
+                                            $ticket['priority'] === 'urgent' ? 'danger' : 
+                                            ($ticket['priority'] === 'high' ? 'warning' : 
+                                            ($ticket['priority'] === 'medium' ? 'info' : 'success')) 
+                                        ?>">
+                                            <?= ucfirst($ticket['priority']) ?>
+                                        </span>
+                                        <br>
+                                        <small class="text-muted" style="font-size: 0.7rem;">
+                                            <?php 
+                                            require_once 'includes/priority-helper.php';
+                                            echo formatResponseTime(getPriorityResponseTime($pdo, $ticket['priority'], $ticket['location_id'] ?? null));
+                                            ?>
+                                        </small>
+
+                                    </td>
                                     <td>
                                         <span class="badge bg-<?= $ticket['status'] === 'resolved' ? 'success' : ($ticket['status'] === 'in_progress' ? 'warning' : 'secondary') ?>">
                                             <?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?>
@@ -106,14 +124,26 @@
                 <?php if ($overdue_tickets): ?>
                     <?php foreach ($overdue_tickets as $ticket): ?>
                     <div class="border-bottom pb-2 mb-2">
-                        <strong><?= htmlspecialchars($ticket['customer_name']) ?></strong>
-                        <?php if ($ticket['unread_messages'] > 0): ?>
-                        <span class="badge bg-danger ms-1"><?= $ticket['unread_messages'] ?> msg</span>
-                        <?php endif; ?><br>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong><?= htmlspecialchars($ticket['customer_name']) ?></strong>
+                                <?php if ($ticket['unread_messages'] > 0): ?>
+                                <span class="badge bg-danger ms-1"><?= $ticket['unread_messages'] ?> msg</span>
+                                <?php endif; ?>
+                            </div>
+                            <span class="badge bg-<?= 
+                                $ticket['priority'] === 'urgent' ? 'danger' : 
+                                ($ticket['priority'] === 'high' ? 'warning' : 
+                                ($ticket['priority'] === 'medium' ? 'info' : 'success')) 
+                            ?>">
+                                <?= ucfirst($ticket['priority']) ?>
+                            </span>
+                        </div>
                         <small class="text-muted">
                             <?= $ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT) ?><br>
                             <?= htmlspecialchars($ticket['title']) ?><br>
-                            Created: <?= date('M j, Y', strtotime($ticket['created_at'])) ?>
+                            Created: <?= date('M j, Y', strtotime($ticket['created_at'])) ?><br>
+
                         </small>
                         <div class="mt-1">
                             <a href="/SupporTracker/ticket-detail?id=<?= $ticket['id'] ?>" class="btn btn-sm btn-outline-danger">View</a>

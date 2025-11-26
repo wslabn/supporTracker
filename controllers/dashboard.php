@@ -42,7 +42,7 @@ renderModernPage(
     'Dashboard - SupportTracker',
     'Dashboard',
     'dashboard.php',
-    compact('stats', 'recent_tickets', 'overdue_tickets'),
+    compact('stats', 'recent_tickets', 'overdue_tickets', 'pdo'),
     $headerActions
 );
 ?>

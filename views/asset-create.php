@@ -68,6 +68,16 @@
                     </div>
                     
                     <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Device Password/PIN</label>
+                                <input type="password" class="form-control" name="device_password" placeholder="Login password or PIN">
+                                <small class="text-body-secondary">Optional - for device access during repairs</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
                         <div class="col-md-8">
                             <div class="mb-3">
                                 <label class="form-label">Location</label>
