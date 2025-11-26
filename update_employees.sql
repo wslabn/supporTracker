@@ -1,1 +1,0 @@
-ALTER TABLE employees ADD COLUMN cell_phone VARCHAR(50) AFTER phone;
