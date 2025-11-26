@@ -139,24 +139,20 @@
                                 Reports
                             </a>
                         </li>
-                        <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'manager'])): ?>
-                        <li>
-                            <a href="/SupporTracker/locations" class="nav-link <?= $this->isActive('locations') ?>">
-                                <i class="bi bi-geo-alt me-2"></i>
-                                Locations
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-gear me-2"></i>
+                                Settings
                             </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/SupporTracker/settings">Company Settings</a></li>
+                                <li><a class="dropdown-item" href="/SupporTracker/asset-categories">Asset Categories</a></li>
+                                <li><a class="dropdown-item" href="/SupporTracker/service-categories">Service Categories</a></li>
+                                <li><a class="dropdown-item" href="/SupporTracker/locations">Locations</a></li>
+                                <li><a class="dropdown-item" href="/SupporTracker/users">User Management</a></li>
+                            </ul>
                         </li>
-                        <?php endif; ?>
-                        <?php 
-                        $userPermissions = isset($_SESSION['user_permissions']) ? json_decode($_SESSION['user_permissions'], true) : [];
-                        if ($_SESSION['user_role'] === 'admin' || in_array('can_manage_users', $userPermissions)): ?>
-                        <li>
-                            <a href="/SupporTracker/users" class="nav-link <?= $this->isActive('users') ?>">
-                                <i class="bi bi-people-fill me-2"></i>
-                                Users
-                            </a>
-                        </li>
-                        <?php endif; ?>
+
                     </ul>
                     
                     <hr>
@@ -183,6 +179,12 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= $this->pageTitle ?? 'Dashboard' ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
+                        <!-- Global Search -->
+                        <div class="position-relative me-3">
+                            <input type="text" class="form-control form-control-sm" id="globalSearch" placeholder="Search customers, tickets, assets..." style="width: 300px;">
+                            <div id="searchResults" class="position-absolute bg-body border rounded shadow-sm mt-1 w-100" style="display: none; z-index: 1050; max-height: 400px; overflow-y: auto;"></div>
+                        </div>
+                        
                         <?php 
                         // Debug: Show what's in session
                         // var_dump($_SESSION['user_locations']); 
@@ -266,6 +268,86 @@
                     html.setAttribute('data-bs-theme', e.matches ? 'dark' : 'light');
                 }
             });
+        }
+        
+        // Global Search
+        const searchInput = document.getElementById('globalSearch');
+        const searchResults = document.getElementById('searchResults');
+        let searchTimeout;
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    fetch(`/SupporTracker/search?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            displaySearchResults(data.results);
+                        })
+                        .catch(error => {
+                            console.error('Search error:', error);
+                        });
+                }, 300);
+            });
+            
+            searchInput.addEventListener('blur', function() {
+                setTimeout(() => {
+                    searchResults.style.display = 'none';
+                }, 200);
+            });
+            
+            searchInput.addEventListener('focus', function() {
+                if (this.value.length >= 2) {
+                    searchResults.style.display = 'block';
+                }
+            });
+        }
+        
+        function displaySearchResults(results) {
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="p-3 text-muted">No results found</div>';
+                searchResults.style.display = 'block';
+                return;
+            }
+            
+            let html = '';
+            const groupedResults = {};
+            
+            // Group by type
+            results.forEach(result => {
+                if (!groupedResults[result.type]) {
+                    groupedResults[result.type] = [];
+                }
+                groupedResults[result.type].push(result);
+            });
+            
+            // Display grouped results
+            Object.keys(groupedResults).forEach(type => {
+                html += `<div class="px-3 py-1 bg-light border-bottom"><small class="text-muted text-uppercase fw-bold">${type}s</small></div>`;
+                groupedResults[type].forEach(result => {
+                    html += `
+                        <a href="${result.url}" class="d-block px-3 py-2 text-decoration-none border-bottom" style="color: inherit;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi ${result.icon} me-2 text-primary"></i>
+                                <div>
+                                    <div class="fw-medium">${result.title}</div>
+                                    <small class="text-muted">${result.subtitle}</small>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+            });
+            
+            searchResults.innerHTML = html;
+            searchResults.style.display = 'block';
         }
     </script>
     
