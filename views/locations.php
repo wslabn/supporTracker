@@ -69,6 +69,7 @@
                            data-name="<?= htmlspecialchars($location['name']) ?>"
                            data-address="<?= htmlspecialchars($location['address']) ?>"
                            data-phone="<?= htmlspecialchars($location['phone']) ?>"
+                           data-email="<?= htmlspecialchars($location['email']) ?>"
                            data-tax-rate="<?= $location['tax_rate'] ?>">
                         <i class="bi bi-pencil"></i> Edit
                     </button>
@@ -157,6 +158,7 @@ function editLocation(id) {
     document.getElementById('editLocationName').value = button.dataset.name;
     document.getElementById('editLocationAddress').value = button.dataset.address;
     document.getElementById('editLocationPhone').value = button.dataset.phone;
+    document.getElementById('editLocationEmail').value = button.dataset.email;
     document.getElementById('editLocationTaxRate').value = button.dataset.taxRate;
     
     // Show edit modal
@@ -220,10 +222,16 @@ function toggleLocation(id) {
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Tax Rate (%)</label>
-                                <input type="number" id="editLocationTaxRate" class="form-control" name="tax_rate" step="0.01" min="0" max="100">
+                                <label class="form-label">Email</label>
+                                <input type="email" id="editLocationEmail" class="form-control" name="email">
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tax Rate (%)</label>
+                        <input type="number" id="editLocationTaxRate" class="form-control" name="tax_rate" step="0.01" min="0" max="100">
+                    </div>
                     </div>
                 </div>
                 <div class="modal-footer">

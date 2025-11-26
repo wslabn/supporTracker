@@ -1,244 +1,183 @@
-<!-- Filters -->
-<div class="row mb-3">
-    <div class="col-md-3">
-        <select class="form-select" onchange="filterTickets('status', this.value)">
-            <option value="">All Status</option>
-            <option value="open" <?= ($_GET['status'] ?? '') === 'open' ? 'selected' : '' ?>>Open</option>
-            <option value="in_progress" <?= ($_GET['status'] ?? '') === 'in_progress' ? 'selected' : '' ?>>In Progress</option>
-            <option value="waiting_customer" <?= ($_GET['status'] ?? '') === 'waiting_customer' ? 'selected' : '' ?>>Waiting Customer</option>
-            <option value="resolved" <?= ($_GET['status'] ?? '') === 'resolved' ? 'selected' : '' ?>>Resolved</option>
-        </select>
-    </div>
-    <div class="col-md-3">
-        <select class="form-select" onchange="filterTickets('priority', this.value)">
-            <option value="">All Priority</option>
-            <option value="urgent" <?= ($_GET['priority'] ?? '') === 'urgent' ? 'selected' : '' ?>>Urgent</option>
-            <option value="high" <?= ($_GET['priority'] ?? '') === 'high' ? 'selected' : '' ?>>High</option>
-            <option value="medium" <?= ($_GET['priority'] ?? '') === 'medium' ? 'selected' : '' ?>>Medium</option>
-            <option value="low" <?= ($_GET['priority'] ?? '') === 'low' ? 'selected' : '' ?>>Low</option>
-        </select>
-    </div>
+<?php if (empty($tickets)): ?>
+<div class="text-center py-5">
+    <i class="bi bi-ticket-perforated fs-1 text-muted"></i>
+    <h5 class="mt-3 text-muted">No Tickets Yet</h5>
+    <p class="text-muted">Create your first support ticket to start tracking work</p>
+    <a href="/SupporTracker/tickets/create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>
+        Create First Ticket
+    </a>
 </div>
+<?php else: ?>
 
-<!-- Tickets Table -->
-<div class="card">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Ticket</th>
-                        <th>Customer</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                        <th>Assigned To</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($tickets as $ticket): ?>
-                    <tr>
-                        <td>
-                            <div class="fw-bold"><?= htmlspecialchars($ticket['ticket_number']) ?></div>
-                            <div class="small text-muted"><?= htmlspecialchars($ticket['title']) ?></div>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars($ticket['customer_name']) ?>
-                            <?php if ($ticket['contact_name']): ?>
-                                <div class="small text-muted"><?= htmlspecialchars($ticket['contact_name']) ?></div>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <span class="badge bg-<?= getStatusColor($ticket['status']) ?> status-badge">
-                                <?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?>
-                            </span>
-                        </td>
-                        <td>
-                            <span class="priority-<?= $ticket['priority'] ?>">
-                                <i class="bi bi-circle-fill"></i> <?= ucfirst($ticket['priority']) ?>
-                            </span>
-                        </td>
-                        <td><?= htmlspecialchars($ticket['technician_name'] ?? 'Unassigned') ?></td>
-                        <td><?= date('M j, Y', strtotime($ticket['created_at'])) ?></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="viewTicket(<?= $ticket['id'] ?>)">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+<!-- Tickets List -->
+<div class="row">
+    <?php foreach ($tickets as $ticket): ?>
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="mb-1"><?= htmlspecialchars($ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT)) ?></h6>
+                    <small class="text-muted"><?= htmlspecialchars($ticket['service_category_name'] ?? 'General') ?></small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-<?= 
+                        $ticket['priority'] === 'urgent' ? 'danger' : 
+                        ($ticket['priority'] === 'high' ? 'warning' : 
+                        ($ticket['priority'] === 'medium' ? 'info' : 'success')) 
+                    ?>">
+                        <?= ucfirst($ticket['priority']) ?>
+                    </span>
+                    <br>
+                    <span class="badge bg-<?= 
+                        $ticket['status'] === 'resolved' ? 'success' : 
+                        ($ticket['status'] === 'in_progress' ? 'warning' : 
+                        ($ticket['status'] === 'waiting' ? 'info' : 'secondary')) 
+                    ?> mt-1">
+                        <?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title"><?= htmlspecialchars($ticket['title']) ?></h6>
+                
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-person me-1"></i>
+                        <strong><?= htmlspecialchars($ticket['customer_name']) ?></strong>
+                    </small>
+                </div>
+                
+                <?php if ($ticket['asset_name']): ?>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-laptop me-1"></i>
+                        <?= htmlspecialchars($ticket['asset_name']) ?>
+                    </small>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($ticket['technician_name']): ?>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-person-gear me-1"></i>
+                        Assigned to: <strong><?= htmlspecialchars($ticket['technician_name']) ?></strong>
+                    </small>
+                </div>
+                <?php else: ?>
+                <div class="mb-2">
+                    <small class="text-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Unassigned
+                    </small>
+                </div>
+                <?php endif; ?>
+                
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        Created: <?= date('M j, Y g:i A', strtotime($ticket['created_at'])) ?>
+                    </small>
+                </div>
+                
+                <?php if ($ticket['sla_hours']): ?>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-stopwatch me-1"></i>
+                        SLA: <?= $ticket['sla_hours'] ?> hours
+                    </small>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($ticket['description']): ?>
+                <p class="card-text small text-muted mt-2">
+                    <?= nl2br(htmlspecialchars(substr($ticket['description'], 0, 100))) ?>
+                    <?= strlen($ticket['description']) > 100 ? '...' : '' ?>
+                </p>
+                <?php endif; ?>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="btn-group w-100" role="group">
+                    <?php if (!$ticket['technician_name']): ?>
+                    <button class="btn btn-outline-primary btn-sm" onclick="assignTicket(<?= $ticket['id'] ?>)">
+                        <i class="bi bi-person-plus"></i> Assign
+                    </button>
+                    <?php endif; ?>
+                    
+                    <?php if ($ticket['status'] === 'open'): ?>
+                    <button class="btn btn-outline-warning btn-sm" onclick="updateStatus(<?= $ticket['id'] ?>, 'in_progress')">
+                        <i class="bi bi-play"></i> Start Work
+                    </button>
+                    <?php elseif ($ticket['status'] === 'in_progress'): ?>
+                    <button class="btn btn-outline-success btn-sm" onclick="updateStatus(<?= $ticket['id'] ?>, 'resolved')">
+                        <i class="bi bi-check"></i> Resolve
+                    </button>
+                    <?php endif; ?>
+                    
+                    <button class="btn btn-outline-info btn-sm" onclick="viewTicket(<?= $ticket['id'] ?>)">
+                        <i class="bi bi-eye"></i> View
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+    <?php endforeach; ?>
 </div>
 
-<!-- New Ticket Modal -->
-<div class="modal fade" id="ticketModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<?php endif; ?>
+
+<!-- Assignment Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST">
                 <div class="modal-header">
-                    <h5 class="modal-title">Create New Ticket</h5>
+                    <h5 class="modal-title">Assign Ticket</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Customer *</label>
-                                <select class="form-select" name="customer_id" required onchange="loadCustomerData(this.value)">
-                                    <option value="">Select Customer</option>
-                                    <?php foreach ($customers as $customer): ?>
-                                        <option value="<?= $customer['id'] ?>"><?= htmlspecialchars($customer['name']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Contact</label>
-                                <select class="form-select" name="contact_id" id="contact_id">
-                                    <option value="">Select Contact</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Asset</label>
-                                <select class="form-select" name="asset_id" id="asset_id">
-                                    <option value="">Select Asset</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Assign To</label>
-                                <select class="form-select" name="assigned_to">
-                                    <option value="">Unassigned</option>
-                                    <?php foreach ($technicians as $tech): ?>
-                                        <option value="<?= $tech['id'] ?>"><?= htmlspecialchars($tech['name']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                    <input type="hidden" name="assign_ticket" value="1">
+                    <input type="hidden" name="ticket_id" id="assignTicketId">
                     
                     <div class="mb-3">
-                        <label class="form-label">Title *</label>
-                        <input type="text" class="form-control" name="title" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" name="description" rows="4"></textarea>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Priority</label>
-                                <select class="form-select" name="priority">
-                                    <option value="low">Low</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Category</label>
-                                <select class="form-select" name="category">
-                                    <option value="hardware">Hardware</option>
-                                    <option value="software">Software</option>
-                                    <option value="network">Network</option>
-                                    <option value="security">Security</option>
-                                    <option value="maintenance">Maintenance</option>
-                                    <option value="other" selected>Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Estimated Hours</label>
-                                <input type="number" class="form-control" name="estimated_hours" step="0.25" min="0">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="billable" id="billable" checked>
-                        <label class="form-check-label" for="billable">
-                            Billable
-                        </label>
+                        <label class="form-label">Assign to Technician</label>
+                        <select class="form-select" name="technician_id" required>
+                            <option value="">Select Technician</option>
+                            <?php foreach ($technicians as $tech): ?>
+                            <option value="<?= $tech['id'] ?>"><?= htmlspecialchars($tech['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="create_ticket" class="btn btn-primary">Create Ticket</button>
+                    <button type="submit" class="btn btn-primary">Assign Ticket</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Status Update Form (hidden) -->
+<form method="POST" id="statusForm" style="display: none;">
+    <input type="hidden" name="update_status" value="1">
+    <input type="hidden" name="ticket_id" id="statusTicketId">
+    <input type="hidden" name="status" id="statusValue">
+</form>
+
 <script>
-function filterTickets(type, value) {
-    const url = new URL(window.location);
-    if (value) {
-        url.searchParams.set(type, value);
-    } else {
-        url.searchParams.delete(type);
-    }
-    window.location = url;
+function assignTicket(ticketId) {
+    document.getElementById('assignTicketId').value = ticketId;
+    new bootstrap.Modal(document.getElementById('assignModal')).show();
 }
 
-function loadCustomerData(customerId) {
-    if (!customerId) return;
-    
-    // Load contacts
-    fetch(`/SupporTracker/api/customer-contacts?customer_id=${customerId}`)
-        .then(response => response.json())
-        .then(contacts => {
-            const contactSelect = document.getElementById('contact_id');
-            contactSelect.innerHTML = '<option value="">Select Contact</option>';
-            contacts.forEach(contact => {
-                contactSelect.innerHTML += `<option value="${contact.id}">${contact.name}</option>`;
-            });
-        });
-    
-    // Load assets
-    fetch(`/SupporTracker/api/customer-assets?customer_id=${customerId}`)
-        .then(response => response.json())
-        .then(assets => {
-            const assetSelect = document.getElementById('asset_id');
-            assetSelect.innerHTML = '<option value="">Select Asset</option>';
-            assets.forEach(asset => {
-                assetSelect.innerHTML += `<option value="${asset.id}">${asset.name}</option>`;
-            });
-        });
+function updateStatus(ticketId, status) {
+    document.getElementById('statusTicketId').value = ticketId;
+    document.getElementById('statusValue').value = status;
+    document.getElementById('statusForm').submit();
 }
 
-function viewTicket(id) {
-    window.location.href = `/SupporTracker/tickets/${id}`;
+function viewTicket(ticketId) {
+    window.location.href = `/SupporTracker/ticket-detail?id=${ticketId}`;
 }
 </script>
-
-<?php
-function getStatusColor($status) {
-    switch ($status) {
-        case 'open': return 'primary';
-        case 'in_progress': return 'warning';
-        case 'waiting_customer': return 'info';
-        case 'waiting_parts': return 'secondary';
-        case 'resolved': return 'success';
-        case 'closed': return 'dark';
-        default: return 'secondary';
-    }
-}
-?>

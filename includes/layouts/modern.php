@@ -139,19 +139,14 @@
                                 Reports
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                        <li>
+                            <a href="/SupporTracker/settings" class="nav-link <?= $this->isActive('settings') ?>">
                                 <i class="bi bi-gear me-2"></i>
                                 Settings
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/SupporTracker/settings">Company Settings</a></li>
-                                <li><a class="dropdown-item" href="/SupporTracker/asset-categories">Asset Categories</a></li>
-                                <li><a class="dropdown-item" href="/SupporTracker/service-categories">Service Categories</a></li>
-                                <li><a class="dropdown-item" href="/SupporTracker/locations">Locations</a></li>
-                                <li><a class="dropdown-item" href="/SupporTracker/users">User Management</a></li>
-                            </ul>
                         </li>
+                        <?php endif; ?>
 
                     </ul>
                     

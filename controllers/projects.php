@@ -30,7 +30,7 @@ $projects = $pdo->query("
 ")->fetchAll();
 
 $customers = $pdo->query("SELECT id, name FROM customers ORDER BY name")->fetchAll();
-$technicians = $pdo->query("SELECT id, name FROM technicians WHERE is_active = 1 ORDER BY name")->fetchAll();
+$users = $pdo->query("SELECT id, name FROM users ORDER BY name")->fetchAll();
 
 $headerActions = '
 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#projectModal">
@@ -42,7 +42,7 @@ renderModernPage(
     'Projects - SupportTracker',
     'Projects',
     'projects.php',
-    compact('projects', 'customers', 'technicians'),
+    compact('projects', 'customers', 'users'),
     $headerActions
 );
 ?>

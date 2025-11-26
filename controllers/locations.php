@@ -9,11 +9,12 @@ if (!in_array($_SESSION['user_role'], ['admin', 'manager'])) {
 
 if ($_POST) {
     if (isset($_POST['update_location'])) {
-        $stmt = $pdo->prepare("UPDATE locations SET name = ?, address = ?, phone = ?, tax_rate = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE locations SET name = ?, address = ?, phone = ?, email = ?, tax_rate = ? WHERE id = ?");
         $stmt->execute([
             $_POST['name'],
             $_POST['address'],
             $_POST['phone'],
+            $_POST['email'] ?? null,
             $_POST['tax_rate'] ?: 0.0000,
             $_POST['location_id']
         ]);
@@ -29,11 +30,12 @@ if ($_POST) {
     }
     
     if (isset($_POST['create_location'])) {
-        $stmt = $pdo->prepare("INSERT INTO locations (name, address, phone, tax_rate) VALUES (?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO locations (name, address, phone, email, tax_rate) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([
             $_POST['name'],
             $_POST['address'],
             $_POST['phone'],
+            $_POST['email'],
             $_POST['tax_rate'] ?: 0.0000
         ]);
         header('Location: /SupporTracker/locations');
@@ -51,7 +53,9 @@ if ($_POST) {
 // Get locations with stats
 $locations = $pdo->query("
     SELECT l.*, 
-           COUNT(DISTINCT c.id) as customer_count
+           COUNT(DISTINCT c.id) as customer_count,
+           0 as technician_count,
+           0 as ticket_count
     FROM locations l
     LEFT JOIN customers c ON l.id = c.location_id
     GROUP BY l.id

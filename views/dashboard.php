@@ -68,9 +68,16 @@
                             <tbody>
                                 <?php foreach ($recent_tickets as $ticket): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($ticket['ticket_number']) ?></td>
+                                    <td>
+                                        <a href="/SupporTracker/ticket-detail?id=<?= $ticket['id'] ?>">
+                                            <?= $ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT) ?>
+                                        </a>
+                                        <?php if ($ticket['unread_messages'] > 0): ?>
+                                        <span class="badge bg-danger ms-1"><?= $ticket['unread_messages'] ?></span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= htmlspecialchars($ticket['customer_name']) ?></td>
-                                    <td><?= htmlspecialchars($ticket['subject']) ?></td>
+                                    <td><?= htmlspecialchars($ticket['title']) ?></td>
                                     <td>
                                         <span class="badge bg-<?= $ticket['status'] === 'resolved' ? 'success' : ($ticket['status'] === 'in_progress' ? 'warning' : 'secondary') ?>">
                                             <?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?>
@@ -99,14 +106,17 @@
                 <?php if ($overdue_tickets): ?>
                     <?php foreach ($overdue_tickets as $ticket): ?>
                     <div class="border-bottom pb-2 mb-2">
-                        <strong><?= htmlspecialchars($ticket['customer_name']) ?></strong><br>
+                        <strong><?= htmlspecialchars($ticket['customer_name']) ?></strong>
+                        <?php if ($ticket['unread_messages'] > 0): ?>
+                        <span class="badge bg-danger ms-1"><?= $ticket['unread_messages'] ?> msg</span>
+                        <?php endif; ?><br>
                         <small class="text-muted">
-                            <?= htmlspecialchars($ticket['ticket_number']) ?><br>
-                            <?= htmlspecialchars($ticket['subject']) ?><br>
+                            <?= $ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT) ?><br>
+                            <?= htmlspecialchars($ticket['title']) ?><br>
                             Created: <?= date('M j, Y', strtotime($ticket['created_at'])) ?>
                         </small>
                         <div class="mt-1">
-                            <a href="/SupporTracker/tickets?id=<?= $ticket['id'] ?>" class="btn btn-sm btn-outline-danger">View</a>
+                            <a href="/SupporTracker/ticket-detail?id=<?= $ticket['id'] ?>" class="btn btn-sm btn-outline-danger">View</a>
                         </div>
                     </div>
                     <?php endforeach; ?>
