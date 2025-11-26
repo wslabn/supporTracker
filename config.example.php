@@ -1,11 +1,12 @@
 <?php
-// SupportTracker v2.0 Configuration
+// SupportTracker v2.0 Configuration Example
+// Copy this file to config.php and update with your settings
 
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'supporttracker');
-define('DB_USER', 'supporttracker');
-define('DB_PASS', '3Ga55ociates1nc!');
+define('DB_NAME', 'your_database_name');
+define('DB_USER', 'your_database_user');
+define('DB_PASS', 'your_database_password');
 
 // Application Settings
 define('APP_NAME', 'SupportTracker');

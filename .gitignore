@@ -1,6 +1,8 @@
 # Configuration files with sensitive data
+config.php
 config/database.php
 config/settings.php
+credentials.php
 .env
 
 # Database files
