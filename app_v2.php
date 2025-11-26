@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once 'config_v2.php';
 
 // Simple routing for v2
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

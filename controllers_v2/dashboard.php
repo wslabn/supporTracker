@@ -4,9 +4,9 @@ require_once 'config_v2.php';
 // Get dashboard metrics
 $stats = [
     'open_tickets' => $pdo->query("SELECT COUNT(*) FROM tickets WHERE status IN ('open', 'in_progress')")->fetchColumn(),
-    'customers' => $pdo->query("SELECT COUNT(*) FROM customers")->fetchColumn(),
+    'customers' => $pdo->query("SELECT COUNT(*) FROM customers WHERE status = 'active'")->fetchColumn(),
     'projects' => $pdo->query("SELECT COUNT(*) FROM projects WHERE status = 'active'")->fetchColumn(),
-    'monthly_revenue' => $pdo->query("SELECT COALESCE(SUM(total), 0) FROM invoices WHERE MONTH(created_at) = MONTH(CURRENT_DATE())")->fetchColumn()
+    'monthly_revenue' => $pdo->query("SELECT COALESCE(SUM(total_amount), 0) FROM invoices WHERE MONTH(invoice_date) = MONTH(CURRENT_DATE())")->fetchColumn()
 ];
 
 // Recent tickets

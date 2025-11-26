@@ -1,29 +1,35 @@
 # Configuration files with sensitive data
-config.php
-
-# Environment files
+config/database.php
+config/settings.php
 .env
-.env.local
 
-# Database backups
-*.sql
-*.dump
+# Database files
+*.db
+*.sqlite
+*.sqlite3
 
 # Log files
+logs/
 *.log
 
 # Temporary files
-*.tmp
-*.temp
+tmp/
+temp/
+
+# Upload directories
+uploads/
+files/
 
 # IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# Upload directories
-uploads/
-backups/
+# Backup files
+*.bak
+*.backup

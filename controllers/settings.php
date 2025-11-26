@@ -1,54 +1,71 @@
 <?php
-file_put_contents('/tmp/settings_debug.log', date('Y-m-d H:i:s') . ' - Method: ' . $_SERVER['REQUEST_METHOD'] . "\n", FILE_APPEND);
-file_put_contents('/tmp/settings_debug.log', 'POST data: ' . print_r($_POST, true) . "\n", FILE_APPEND);
+require_once 'config_v2.php';
 
-if ($_POST) {
-    file_put_contents('/tmp/settings_debug.log', 'Processing POST data' . "\n", FILE_APPEND);
-    if (isset($_POST['location_id'])) {
-        // Update location
-        $id = $_POST['location_id'];
-        $stmt = $pdo->prepare("UPDATE locations SET name=?, address=?, phone=?, email=?, website=?, tax_rate=?, tax_id=?, payment_terms=?, logo_url=? WHERE id=?");
-        $stmt->execute([
-            $_POST['name'], $_POST['address'], $_POST['phone'], $_POST['email'], 
-            $_POST['website'], $_POST['tax_rate'] ?: null, $_POST['tax_id'], 
-            $_POST['payment_terms'], $_POST['logo_url'], $id
-        ]);
-    } else {
-        // Create new location
-        $stmt = $pdo->prepare("INSERT INTO locations (name, address, phone, email, website, tax_rate, tax_id, payment_terms, logo_url, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $is_default = $pdo->query("SELECT COUNT(*) FROM locations")->fetchColumn() == 0 ? 1 : 0;
-        $result = $stmt->execute([
-            $_POST['name'], $_POST['address'], $_POST['phone'], $_POST['email'],
-            $_POST['website'], $_POST['tax_rate'] ?: null, $_POST['tax_id'],
-            $_POST['payment_terms'], $_POST['logo_url'], $is_default
-        ]);
-        error_log('Insert result: ' . ($result ? 'SUCCESS' : 'FAILED') . ', Last insert ID: ' . $pdo->lastInsertId());
-    }
-    
-    if (isset($_POST['set_default'])) {
-        $pdo->query("UPDATE locations SET is_default = 0");
-        $pdo->prepare("UPDATE locations SET is_default = 1 WHERE id = ?")->execute([$_POST['location_id'] ?? $pdo->lastInsertId()]);
-    }
-    
-    if (isset($_POST['ajax'])) {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => true]);
-        exit;
-    }
-    
-    header('Location: /SupporTracker/settings?saved=1');
+// Check if user is admin
+if ($_SESSION['user_role'] !== 'admin') {
+    header('Location: /SupporTracker/dashboard');
     exit;
 }
 
-// Get all locations
-try {
-    $stmt = $pdo->query("SELECT * FROM locations ORDER BY is_default DESC, name");
-    $locations = $stmt->fetchAll();
-    error_log('Locations loaded: ' . count($locations));
-} catch (Exception $e) {
-    error_log('Error loading locations: ' . $e->getMessage());
-    $locations = [];
+if ($_POST) {
+    if (isset($_POST['save_settings'])) {
+        // Create settings table if it doesn't exist
+        $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            setting_key VARCHAR(100) UNIQUE,
+            setting_value TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )");
+        
+        // Save settings
+        $settings = [
+            'company_name' => $_POST['company_name'],
+            'company_logo_url' => $_POST['company_logo_url'],
+            'default_hourly_rate' => $_POST['default_hourly_rate'],
+            'default_tax_rate' => $_POST['default_tax_rate'],
+            'invoice_due_days' => $_POST['invoice_due_days']
+        ];
+        
+        foreach ($settings as $key => $value) {
+            $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+            $stmt->execute([$key, $value, $value]);
+        }
+        
+        $success = "Settings saved successfully!";
+    }
 }
 
-renderPage('Settings - SupportTracker', 'settings.php', compact('locations'));
+// Get current settings
+$current_settings = [];
+try {
+    $settings = $pdo->query("SELECT setting_key, setting_value FROM settings")->fetchAll();
+    foreach ($settings as $setting) {
+        $current_settings[$setting['setting_key']] = $setting['setting_value'];
+    }
+} catch (Exception $e) {
+    // Settings table doesn't exist yet
+}
+
+// Default values
+$defaults = [
+    'company_name' => 'Your MSP Company',
+    'company_logo_url' => '',
+    'default_hourly_rate' => '75.00',
+    'default_tax_rate' => '0.00',
+    'invoice_due_days' => '30'
+];
+
+foreach ($defaults as $key => $value) {
+    if (!isset($current_settings[$key])) {
+        $current_settings[$key] = $value;
+    }
+}
+
+renderModernPage(
+    'Settings - SupportTracker',
+    'System Settings',
+    'settings.php',
+    compact('current_settings', 'success'),
+    ''
+);
 ?>
