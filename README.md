@@ -2,6 +2,22 @@
 
 A complete web-based support and billing tracker for managed service providers (MSPs) with modern UI, user management, and multi-location support.
 
+## Development Workflow
+
+### Making Changes
+1. Work in development directory: `/home/appligeeks/projects/SupporTracker/`
+2. Test changes locally
+3. Commit to git when ready
+4. Deploy to web server using: `./deploy.sh`
+
+### Deployment
+```bash
+# Deploy to web server
+./deploy.sh
+```
+
+This copies all files to `/var/www/html/SupporTracker/` and sets up proper database credentials.
+
 ## ✅ COMPLETED FEATURES
 
 ### Core System
@@ -102,7 +118,7 @@ A complete web-based support and billing tracker for managed service providers (
 - Development in `/home/appligeeks/projects/SupporTracker/`
 - Production deployment to `/var/www/html/SupporTracker/`
 - Git-based version control with branch management
-- Backup system integrated with development directory
+- Automated deployment script for web server updates
 
 ## Next Steps
 
