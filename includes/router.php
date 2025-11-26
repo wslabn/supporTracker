@@ -15,21 +15,16 @@ class Router {
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $path = str_replace('/SupporTracker', '', $path);
         
+        file_put_contents('/tmp/router_debug.log', date('Y-m-d H:i:s') . " - Method: $method, Path: $path\n", FILE_APPEND);
+        
         // Remove trailing slash
         $path = rtrim($path, '/');
         
         // Check authentication first
-        if (!isset($_SESSION['admin_logged_in']) && $path !== '/logout') {
-            // If not logged in and not accessing logout, show login page
-            if ($path === '' || $path === '/') {
-                // Show login page directly
-                include_once 'index.php';
-                exit;
-            } else {
-                // Redirect to login for other pages
-                header('Location: /SupporTracker/');
-                exit;
-            }
+        if (!isset($_SESSION['admin_logged_in']) && $path !== '/logout' && $path !== '/simple_login') {
+            // Redirect to simple login
+            header('Location: /SupporTracker/simple_login');
+            exit;
         }
         
         if ($path === '' || $path === '/') {
@@ -78,6 +73,13 @@ $router->get('/workorders', 'controllers/workorders.php');
 $router->get('/workorder', 'controllers/workorder_detail.php');
 $router->get('/projects', 'controllers/projects.php');
 $router->get('/parts', 'controllers/parts.php');
+$router->get('/invoices', 'controllers/invoices.php');
+$router->get('/invoice', 'controllers/invoice_detail.php');
+$router->get('/settings', 'controllers/settings.php');
+$router->get('/run_sql', 'run_sql.php');
+$router->get('/simple_login', 'simple_login.php');
+$router->post('/simple_login', 'simple_login.php');
+$router->post('/set_location', 'controllers/set_location.php');
 $router->get('/credentials', 'controllers/credentials.php');
 $router->get('/search', 'controllers/search.php');
 $router->get('/logout', 'logout.php');
@@ -91,6 +93,8 @@ $router->post('/workorders', 'controllers/workorders.php');
 $router->post('/workorder', 'controllers/workorder_detail.php');
 $router->post('/projects', 'controllers/projects.php');
 $router->post('/parts', 'controllers/parts.php');
+$router->post('/invoices', 'controllers/invoices.php');
+$router->post('/settings', 'controllers/settings.php');
 $router->post('/credentials', 'controllers/credentials.php');
 $router->post('/debug_post.php', 'debug_post.php');
 

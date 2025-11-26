@@ -1,21 +1,23 @@
 <?php
 require_once 'config.php';
-require_once 'includes/template.php';
-require_once 'includes/router.php';
 
-if (!isset($_SESSION['admin_logged_in'])) {
-    header('Location: index.php');
-    exit;
+// Simple routing for v2
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$path = str_replace('/SupporTracker', '', $path);
+$path = trim($path, '/');
+
+// Default to dashboard
+if (empty($path)) {
+    $path = 'dashboard';
 }
 
-// Make PDO available globally for controllers
-global $pdo;
+// Route to controllers
+$controllerFile = "controllers_v2/{$path}.php";
 
-// Start output buffering to prevent duplicate output
-ob_start();
-
-$router->dispatch();
-
-// End output buffering and send
-ob_end_flush();
+if (file_exists($controllerFile)) {
+    include $controllerFile;
+} else {
+    http_response_code(404);
+    echo "Page not found: $path";
+}
 ?>

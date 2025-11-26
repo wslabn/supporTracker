@@ -70,13 +70,25 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="company?id=<?= $wo['company_id'] ?>"><?= htmlspecialchars($wo['company_name']) ?></a>
+                                <?php if ($wo['company_id']): ?>
+                                    <a href="company?id=<?= $wo['company_id'] ?>"><?= htmlspecialchars($wo['company_name']) ?></a>
+                                <?php else: ?>
+                                    <strong><?= htmlspecialchars($wo['customer_name']) ?></strong>
+                                    <?php if ($wo['customer_phone']): ?>
+                                        <br><small class="text-muted"><?= htmlspecialchars($wo['customer_phone']) ?></small>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if ($wo['asset_id']): ?>
                                     <a href="asset?id=<?= $wo['asset_id'] ?>"><?= htmlspecialchars($wo['asset_name']) ?></a>
                                     <?php if ($wo['asset_tag']): ?>
                                         <br><small class="text-muted"><?= htmlspecialchars($wo['asset_tag']) ?></small>
+                                    <?php endif; ?>
+                                <?php elseif ($wo['device_type']): ?>
+                                    <strong><?= htmlspecialchars($wo['device_type']) ?></strong>
+                                    <?php if ($wo['device_make'] || $wo['device_model']): ?>
+                                        <br><small class="text-muted"><?= htmlspecialchars(trim($wo['device_make'] . ' ' . $wo['device_model'])) ?></small>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <span class="text-muted">General</span>
@@ -107,6 +119,9 @@
                                 <a href="workorder?id=<?= $wo['id'] ?>" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                <button class="btn btn-sm btn-danger" onclick="deleteWorkOrder(<?= $wo['id'] ?>)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -118,6 +133,34 @@
 </div>
 
 <script>
+function toggleCustomerType() {
+    const type = document.getElementById('customer_type').value;
+    const companySection = document.getElementById('company_section');
+    const individualSection = document.getElementById('individual_section');
+    const companySelect = document.getElementById('company_id');
+    const customerName = document.getElementById('customer_name');
+    const deviceType = document.getElementById('device_type');
+    
+    if (type === 'company') {
+        companySection.style.display = 'block';
+        individualSection.style.display = 'none';
+        companySelect.required = true;
+        customerName.required = false;
+        if (deviceType) deviceType.required = false;
+    } else if (type === 'individual') {
+        companySection.style.display = 'none';
+        individualSection.style.display = 'block';
+        companySelect.required = false;
+        customerName.required = true;
+        if (deviceType) deviceType.required = true;
+    } else {
+        companySection.style.display = 'none';
+        individualSection.style.display = 'none';
+        companySelect.required = false;
+        customerName.required = false;
+        if (deviceType) deviceType.required = false;
+    }
+}
 function filterByCompany(companyId) {
     window.location.href = companyId ? `/SupporTracker/workorders?company_id=${companyId}` : '/SupporTracker/workorders';
 }
@@ -229,6 +272,18 @@ function loadAssetsForCompany(companyId) {
         .catch(error => console.error('Error loading assets:', error));
 }
 
+// Auto-open modal if URL parameter is set
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_open') === '1') {
+        openWorkOrderModal();
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+
+</script>
+
 <?php
 function getStatusColor($status) {
     switch (strtolower($status)) {
@@ -252,4 +307,3 @@ function getPriorityColor($priority) {
     }
 }
 ?>
-</script>

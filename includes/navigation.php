@@ -13,9 +13,27 @@
             <a class="nav-link" href="/SupporTracker/workorders">Work Orders</a>
             <a class="nav-link" href="/SupporTracker/projects">Projects</a>
             <a class="nav-link" href="/SupporTracker/parts">Parts</a>
+            <a class="nav-link" href="/SupporTracker/invoices">Invoices</a>
+            <a class="nav-link" href="/SupporTracker/settings">Settings</a>
         </div>
         
         <div class="d-flex">
+            <select class="form-select form-select-sm me-3" id="locationSelector" onchange="changeLocation()" style="width: 200px;">
+                <option value="">All Locations</option>
+                <?php
+                if (isset($pdo) && $pdo) {
+                    try {
+                        $stmt = $pdo->query("SELECT * FROM locations ORDER BY is_default DESC, name");
+                        while ($loc = $stmt->fetch()) {
+                            $selected = ($_SESSION['current_location'] ?? '') == $loc['id'] ? 'selected' : '';
+                            echo "<option value='{$loc['id']}' $selected>{$loc['name']}</option>";
+                        }
+                    } catch (Exception $e) {
+                        // Ignore database errors in navigation
+                    }
+                }
+                ?>
+            </select>
             <form method="GET" action="search" class="d-flex me-3">
                 <input class="form-control form-control-sm me-2" type="search" name="q" placeholder="Search..." style="width: 200px;">
                 <button class="btn btn-outline-light btn-sm" type="submit">
@@ -24,5 +42,16 @@
             </form>
             <a href="/SupporTracker/logout" class="btn btn-outline-light btn-sm">Logout</a>
         </div>
+
+<script>
+function changeLocation() {
+    const locationId = document.getElementById('locationSelector').value;
+    fetch('/SupporTracker/set_location', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'location_id=' + locationId
+    }).then(() => location.reload());
+}
+</script>
     </div>
 </nav>

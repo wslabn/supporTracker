@@ -15,28 +15,43 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Company *</label>
-                                <select class="form-select" id="company_id" name="company_id" required>
-                                    <option value="">Select Company</option>
-                                    <?php foreach ($companies as $company): ?>
-                                        <option value="<?= $company['id'] ?>" <?= (isset($workorder) && $workorder['company_id'] == $company['id']) || (!isset($workorder) && isset($selected_company_id) && $selected_company_id == $company['id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($company['name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
+                                <label class="form-label">Customer *</label>
+                                <select class="form-select" id="customer_id" name="customer_id" required onchange="loadAssets()">
+                                    <option value="">Select Customer</option>
+                                    <optgroup label="Business Customers">
+                                        <?php foreach ($customers as $customer): ?>
+                                            <?php if (($customer['customer_type'] ?? 'business') === 'business'): ?>
+                                                <option value="<?= $customer['id'] ?>" <?= (isset($workorder) && $workorder['customer_id'] == $customer['id']) || (!isset($workorder) && isset($selected_customer_id) && $selected_customer_id == $customer['id']) ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($customer['name']) ?>
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </optgroup>
+                                    <optgroup label="Individual Customers">
+                                        <?php foreach ($customers as $customer): ?>
+                                            <?php if (($customer['customer_type'] ?? 'business') === 'individual'): ?>
+                                                <option value="<?= $customer['id'] ?>" <?= (isset($workorder) && $workorder['customer_id'] == $customer['id']) || (!isset($workorder) && isset($selected_customer_id) && $selected_customer_id == $customer['id']) ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($customer['name']) ?>
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </optgroup>
                                 </select>
+                                <small class="text-muted">Don't see the customer? <a href="/SupporTracker/customers">Add new customer</a></small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Asset</label>
+                                <label class="form-label">Asset/Device</label>
                                 <select class="form-select" id="asset_id" name="asset_id">
-                                    <option value="">Select Asset (Optional)</option>
+                                    <option value="">Select Asset/Device (Optional)</option>
                                     <?php foreach ($assets as $asset): ?>
                                         <option value="<?= $asset['id'] ?>" <?= (isset($workorder) && $workorder['asset_id'] == $asset['id']) || (!isset($workorder) && isset($selected_asset_id) && $selected_asset_id == $asset['id']) ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($asset['name']) ?><?= $asset['asset_tag'] ? ' (' . htmlspecialchars($asset['asset_tag']) . ')' : '' ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="text-muted">Assets/devices can be added via customer profile</small>
                             </div>
                         </div>
                     </div>

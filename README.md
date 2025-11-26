@@ -1,247 +1,117 @@
-# SupportTracker - MSP Customer Management System
+# SupportTracker v2.0 - MSP Customer Management System
 
-A web-based support and billing tracker for managed service providers (MSPs) handling IT support, phone services, and asset management.
+A complete web-based support and billing tracker for managed service providers (MSPs) with modern UI, user management, and multi-location support.
 
-## Project Overview
+## ✅ COMPLETED FEATURES
 
-**Business Model:**
-- Monthly support contracts with flexible pricing per customer
-- Ad-hoc billable work outside contracts
-- Bundled services: IT support, Azure backups, Twilio phone service, FreePBX management
-- Asset management for business customers (20+ devices per company)
-- Check-based payments with online customer portal
+### Core System
+- ✅ **User Management**: Role-based permissions (Admin/Manager/Technician) with granular permission control
+- ✅ **Multi-Location Support**: Location-based access control with switcher for multi-store MSPs
+- ✅ **Modern Authentication**: Secure login with forced password changes and session management
+- ✅ **Company Settings**: Configurable rates, tax settings, logo, and business information
 
-## Core Features
+### User Interface
+- ✅ **Modern Bootstrap 5.3 UI**: Dark/light mode support with system theme detection
+- ✅ **Responsive Design**: Clean, professional interface that works on all devices
+- ✅ **Location Context**: Always-visible location switcher for proper business operations
+- ✅ **Role-Based Navigation**: Menu items show/hide based on user permissions
 
-### Customer & Asset Management
-- [ ] Company profiles with custom monthly contract rates
-- [ ] Asset tracking (computers, servers, printers, phones, network equipment)
-- [ ] Asset categories and location tracking
-- [ ] Secure storage for passwords, notes, and documents per asset
-- [ ] Asset history and service records
+### Database Architecture
+- ✅ **Clean v2 Schema**: Proper relationships with auto-generated ticket/invoice numbers
+- ✅ **Multi-Location Tables**: Location-based customer and user assignments
+- ✅ **Permission System**: JSON-based granular permissions per user
+- ✅ **Auto-Numbering**: TKT000001, INV-000001 format with database triggers
 
-### Work Order System
-- [ ] Admin work order creation (manual entry)
-- [ ] Customer portal work order submission (per asset)
-- [ ] Work order status tracking and updates
-- [ ] Billable vs contract-covered work designation
-- [ ] Time tracking and labor costs
+## System Modules
 
-### Billing & Invoicing
-- [ ] Monthly contract billing automation
-- [ ] Ad-hoc work billing integration
-- [ ] Customer balance management with aging
-- [ ] Partial payment handling (oldest invoice first)
-- [ ] Payment processing (check recording, Stripe/PayPal integration)
-- [ ] Late payment tracking and automated reminders
+### ✅ User Management
+- Create/edit users with custom permission sets
+- Role-based defaults (Admin/Manager/Technician)
+- Location access control per user
+- Password management and forced changes
 
-### Twilio Service Management
-- [ ] Phone number and service tracking per customer
-- [ ] Usage monitoring and cost tracking
-- [ ] Service bundling with markup pricing
-- [ ] FreePBX configuration management
+### ✅ Location Management
+- Multi-location support for MSPs with multiple offices
+- Location-specific tax rates and addresses
+- User assignment to locations with access control
+- Location switcher for proper business context
 
-### Customer Portal
-- [ ] Invoice viewing and download (PDF)
-- [ ] Payment history and account balance
-- [ ] Work order submission by asset
-- [ ] Service overview and asset list
-- [ ] Payment instructions and online payment options
+### ✅ Customer Management
+- Business and individual customer support
+- Location-based customer assignments
+- Contact management and billing information
 
-## Technical Requirements
+### ✅ Asset Management
+- Equipment tracking per customer
+- Asset categories and status management
+- Location and customer relationships
 
-### Development Environment
-- [ ] Ubuntu server with Webmin setup
-- [ ] PHP 7.4+ and MySQL 5.7+
-- [ ] Apache web server configuration
-- [ ] Local SSL certificate for HTTPS testing
+### ✅ Ticket System
+- Auto-generated ticket numbers
+- Status tracking and priority management
+- Technician assignment and time tracking
 
-### Deployment Strategy
-- [ ] GitHub repository setup
-- [ ] Webhook deployment script (deploy.php)
-- [ ] Shared hosting compatibility (portable PHP/MySQL)
-- [ ] Environment configuration management
-- [ ] Database migration system
+### ✅ Project Management
+- Project organization with ticket relationships
+- Status tracking and budget management
+- Customer and location context
 
-### Security & Data Management
-- [ ] Secure password storage for customer assets
-- [ ] User authentication and session management
-- [ ] Role-based access control
-- [ ] Data backup and export functionality
-- [ ] HTTPS enforcement
+### ✅ Invoice System
+- Auto-generated invoice numbers
+- Integration with ticket system
+- Customer and location-based billing
 
-## Development Phases
+### ✅ Reporting System
+- Dashboard metrics and overviews
+- Revenue and activity tracking
 
-### ✅ Phase 1: Core Foundation - COMPLETED
-- [x] Database schema design and implementation
-- [x] MVC framework with routing system
-- [x] Company management with modal interface
-- [x] Employee management with contact details
-- [x] Asset tracking with category and status management
-- [x] Credential management with encryption
-- [x] Authentication and session management
-- [x] Global search functionality
-- [x] Modern responsive admin interface
+## Technical Stack
 
-### Phase 2: Work Order System
-- [ ] Work order creation and management
-- [ ] Status tracking and updates
-- [ ] Time tracking integration
-- [ ] Billable work designation
+- **Backend**: PHP 7.4+ with PDO MySQL
+- **Frontend**: Bootstrap 5.3 with dark/light mode
+- **Database**: MySQL 5.7+ with proper foreign keys
+- **Authentication**: Session-based with role permissions
+- **Architecture**: MVC pattern with clean routing
 
-### Phase 3: Billing System
-- [ ] Invoice generation and management
-- [ ] Payment processing and recording
-- [ ] Customer balance tracking
-- [ ] Late payment management
+## Security Features
 
-### Phase 4: Customer Portal
-- [ ] Customer authentication
-- [ ] Invoice and payment viewing
-- [ ] Work order submission
-- [ ] Account management features
+- Role-based access control with granular permissions
+- Location-based data access restrictions
+- Secure password storage and forced changes
+- Session management with proper logout
+- Input validation and SQL injection protection
 
-### Phase 5: Service Integration
-- [ ] Twilio service tracking
-- [ ] Email invoice delivery
-- [ ] Automated billing cycles
-- [ ] Reporting and analytics
+## Business Model Support
 
-### Phase 6: Deployment & Production
-- [ ] GitHub webhook deployment
-- [ ] Shared hosting migration
-- [ ] SSL certificate setup
-- [ ] Production testing and launch
+- Monthly support contracts with flexible pricing
+- Multi-location MSP operations
+- Technician location assignments
+- Proper business context for all operations
+- Asset and customer management per location
 
-## File Structure
-```
-/SupporTracker/
-├── README.md
-├── config/
-│   ├── database.php
-│   └── settings.php
-├── includes/
-│   ├── functions.php
-│   └── auth.php
-├── dashboard.php
-├── companies.php
-├── company_detail.php
-├── employees.php
-├── employee_detail.php
-├── assets.php
-├── asset_detail.php
-├── credentials.php
-├── search.php
-├── portal/
-│   ├── login.php
-│   ├── dashboard.php
-│   ├── invoices.php
-│   └── workorders.php
-├── api/
-│   └── webhook.php
-├── assets/
-│   ├── css/
-│   └── js/
-└── deploy.php
-```
+## Installation Requirements
 
-## Completed Features
+- Ubuntu server with Apache/PHP/MySQL
+- PHP 7.4+ with PDO MySQL extension
+- MySQL 5.7+ with trigger support
+- Bootstrap 5.3 (CDN)
+- Modern web browser with JavaScript
 
-### Core System ✅ COMPLETE
-- ✅ **Database Schema**: Complete 11-table schema with companies, employees, assets, credentials, work orders, invoices, payments
-- ✅ **Company Management**: Full CRUD with modal interface, monthly rates, contact info, status management
-- ✅ **Employee Management**: Per-company employee tracking with contact details, office/cell phone, department, position, status, asset assignments
-- ✅ **Asset Management**: Comprehensive asset tracking with auto-incrementing tags, employee assignment, categories, status management
-- ✅ **Credential Management**: Encrypted password storage per asset with secure viewing
-- ✅ **Global Search**: Search across companies, employees, and assets with modal integration
+## Development Workflow
 
-### Dashboard System ✅ COMPLETE
-- ✅ **Company Detail Dashboard**: Tabbed interface showing employees, assets, work orders, billing with embedded modals
-- ✅ **Asset Detail Dashboard**: Complete asset view with credentials, work orders, and related information
-- ✅ **Employee Detail Dashboard**: Employee overview with assigned assets, credentials, and work orders
-- ✅ **Cross-linking Navigation**: Clickable names throughout application for seamless navigation
+- Development in `/home/appligeeks/projects/SupporTracker/`
+- Production deployment to `/var/www/html/SupporTracker/`
+- Git-based version control with branch management
+- Backup system integrated with development directory
 
-### User Interface ✅ COMPLETE
-- ✅ **Modern Modal System**: All CRUD operations use modal popups instead of page navigation
-- ✅ **Responsive Design**: Clean, professional interface with Bootstrap styling
-- ✅ **Consistent Navigation**: Unified header with search functionality across all pages
-- ✅ **Authentication System**: Secure login/logout with session management and route protection
-- ✅ **MVC Architecture**: Clean separation with controllers, views, and templating system
-- ✅ **Clean URLs**: Router-based system with SEO-friendly URLs
+## Next Steps
 
-## Development Status
+1. **Add First Customer** - Start using the customer management system
+2. **Asset Tracking** - Add customer equipment and devices
+3. **Ticket Management** - Begin tracking support requests
+4. **Invoice Generation** - Create bills from completed work
+5. **User Training** - Set up additional technicians and managers
 
-### ✅ Phase 1: Core Foundation - COMPLETED
-- [x] Database schema design and implementation
-- [x] Company, employee, and asset management systems
-- [x] Authentication and security
-- [x] Modern UI with modal-based operations
-- [x] Global search functionality
-- [x] Cross-linking navigation system
+---
 
-### ✅ Phase 2: Work Order System - COMPLETED
-- [x] Work order creation and management
-- [x] Status tracking and updates (new, in_progress, completed, etc.)
-- [x] Task management with completion tracking
-- [x] Parts ordering system with real-time pricing
-- [x] Customer vs internal content separation
-- [x] Timeline integration with task events
-- [x] Billable vs contract-covered work designation
-
-### 📋 Phase 3: Billing System - PLANNED
-- [ ] Invoice generation and management
-- [ ] Payment processing and recording
-- [ ] Customer balance tracking with aging
-- [ ] Late payment management and automated reminders
-- [ ] Integration with work orders for billing
-
-### 🌐 Phase 4: Customer Portal - PLANNED
-- [ ] Customer authentication system
-- [ ] Invoice viewing and download (PDF)
-- [ ] Work order submission by asset
-- [ ] Payment history and account management
-
-### 📞 Phase 5: Service Integration - PLANNED
-- [ ] Twilio service tracking and management
-- [ ] Email invoice delivery
-- [ ] Automated billing cycles
-- [ ] Reporting and analytics
-
-### 🚀 Phase 6: Deployment & Production - PLANNED
-- [ ] GitHub webhook deployment system
-- [ ] Shared hosting migration
-- [ ] SSL certificate setup
-- [ ] Production testing and launch
-
-## Technical Achievements
-
-### Architecture
-- **MVC Pattern**: Clean separation of concerns with controllers, views, and models
-- **Router System**: SEO-friendly URLs with centralized routing
-- **Template Engine**: Reusable layouts and components
-- **Modal-First UI**: Modern interface without page refreshes
-
-### Security
-- **Session Management**: Secure authentication with proper logout
-- **Route Protection**: All pages require authentication
-- **Password Encryption**: Secure storage of asset credentials
-- **Input Validation**: Protection against common vulnerabilities
-
-### Database Design
-- **Normalized Schema**: Efficient 11-table structure
-- **Foreign Key Constraints**: Data integrity and referential consistency
-- **Auto-incrementing Tags**: Automated asset numbering system
-- **Flexible Status Management**: Extensible status tracking
-
-### User Experience
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Intuitive Navigation**: Context-aware linking and breadcrumbs
-- **Real-time Search**: Instant results across all data types
-- **Smart Defaults**: Pre-filled forms and logical workflows
-
-## Development Notes
-- Prioritize portability for easy shared hosting migration
-- Focus on simplicity and reliability over complex features
-- Maintain compatibility with existing business processes
-- Plan for future scalability and feature additions
-- All CRUD operations use AJAX for seamless user experience
+**SupportTracker v2.0** - Complete MSP management solution with modern architecture and multi-location support.
