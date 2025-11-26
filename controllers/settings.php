@@ -1,5 +1,5 @@
 <?php
-require_once 'config_v2.php';
+require_once 'config.php';
 
 // Check if user is admin
 if ($_SESSION['user_role'] !== 'admin') {

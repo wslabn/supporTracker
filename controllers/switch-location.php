@@ -1,5 +1,5 @@
 <?php
-require_once 'config_v2.php';
+require_once 'config.php';
 
 $locationId = $_GET['id'] ?? null;
 

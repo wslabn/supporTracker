@@ -1,5 +1,5 @@
 <?php
-require_once 'config_v2.php';
+require_once 'config.php';
 
 // Check if user can manage users
 $userPermissions = isset($_SESSION['user_permissions']) ? json_decode($_SESSION['user_permissions'], true) : [];

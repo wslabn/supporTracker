@@ -1,19 +1,12 @@
-<?php if ($user_role === 'admin'): ?>
-<!-- Admin Dashboard -->
-<div class="row">
-    <div class="col-12">
-        <h1><i class="fas fa-tachometer-alt"></i> Business Overview</h1>
-    </div>
-</div>
-
-<div class="row mt-4">
+<!-- Dashboard Stats -->
+<div class="row mb-4">
     <div class="col-md-3">
         <div class="card text-center border-warning">
             <div class="card-body">
-                <i class="fas fa-clipboard-list fa-2x text-warning mb-2"></i>
-                <h2 class="text-warning"><?= $stats['open_workorders'] ?></h2>
-                <p class="card-text">Open Work Orders</p>
-                <a href="/SupporTracker/workorders" class="btn btn-warning btn-sm">Manage</a>
+                <i class="bi bi-ticket-perforated fs-1 text-warning mb-2"></i>
+                <h2 class="text-warning"><?= $stats['open_tickets'] ?></h2>
+                <p class="card-text">Open Tickets</p>
+                <a href="/SupporTracker/tickets" class="btn btn-warning btn-sm">Manage</a>
             </div>
         </div>
     </div>
@@ -21,21 +14,21 @@
     <div class="col-md-3">
         <div class="card text-center border-success">
             <div class="card-body">
-                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                <h2 class="text-success"><?= $stats['completed_this_month'] ?></h2>
-                <p class="card-text">Completed This Month</p>
-                <small class="text-muted">Work Orders</small>
+                <i class="bi bi-people fs-1 text-success mb-2"></i>
+                <h2 class="text-success"><?= $stats['customers'] ?></h2>
+                <p class="card-text">Total Customers</p>
+                <a href="/SupporTracker/customers" class="btn btn-success btn-sm">View</a>
             </div>
         </div>
     </div>
     
     <div class="col-md-3">
-        <div class="card text-center border-danger">
+        <div class="card text-center border-info">
             <div class="card-body">
-                <i class="fas fa-file-invoice-dollar fa-2x text-danger mb-2"></i>
-                <h2 class="text-danger"><?= $stats['outstanding_invoices'] ?></h2>
-                <p class="card-text">Outstanding Invoices</p>
-                <a href="/SupporTracker/invoices" class="btn btn-danger btn-sm">Review</a>
+                <i class="bi bi-kanban fs-1 text-info mb-2"></i>
+                <h2 class="text-info"><?= $stats['projects'] ?></h2>
+                <p class="card-text">Active Projects</p>
+                <a href="/SupporTracker/projects" class="btn btn-info btn-sm">View</a>
             </div>
         </div>
     </div>
@@ -43,7 +36,7 @@
     <div class="col-md-3">
         <div class="card text-center border-primary">
             <div class="card-body">
-                <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
+                <i class="bi bi-currency-dollar fs-1 text-primary mb-2"></i>
                 <h2 class="text-primary">$<?= number_format($stats['monthly_revenue'], 0) ?></h2>
                 <p class="card-text">Monthly Revenue</p>
                 <small class="text-muted"><?= date('F Y') ?></small>
@@ -52,52 +45,46 @@
     </div>
 </div>
 
-<div class="row mt-4">
+<div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-clock"></i> Recent Work Orders</h5>
+                <h5><i class="bi bi-clock"></i> Recent Tickets</h5>
             </div>
             <div class="card-body">
-                <?php if ($recent_workorders): ?>
+                <?php if ($recent_tickets): ?>
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
+                                    <th>Ticket #</th>
                                     <th>Customer</th>
-                                    <th>Title</th>
+                                    <th>Subject</th>
                                     <th>Status</th>
+                                    <th>Technician</th>
                                     <th>Created</th>
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($recent_workorders as $wo): ?>
+                                <?php foreach ($recent_tickets as $ticket): ?>
                                 <tr>
+                                    <td><?= htmlspecialchars($ticket['ticket_number']) ?></td>
+                                    <td><?= htmlspecialchars($ticket['customer_name']) ?></td>
+                                    <td><?= htmlspecialchars($ticket['subject']) ?></td>
                                     <td>
-                                        <?php if ($wo['company_name']): ?>
-                                            <?= htmlspecialchars($wo['company_name']) ?>
-                                        <?php else: ?>
-                                            <?= htmlspecialchars($wo['customer_name']) ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= htmlspecialchars($wo['title']) ?></td>
-                                    <td>
-                                        <span class="badge bg-<?= $wo['status'] === 'completed' ? 'success' : ($wo['status'] === 'in_progress' ? 'warning' : 'secondary') ?>">
-                                            <?= ucfirst($wo['status']) ?>
+                                        <span class="badge bg-<?= $ticket['status'] === 'resolved' ? 'success' : ($ticket['status'] === 'in_progress' ? 'warning' : 'secondary') ?>">
+                                            <?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?>
                                         </span>
                                     </td>
-                                    <td><?= date('M j', strtotime($wo['created_at'])) ?></td>
-                                    <td>
-                                        <a href="/SupporTracker/workorder?id=<?= $wo['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
-                                    </td>
+                                    <td><?= htmlspecialchars($ticket['technician_name'] ?? 'Unassigned') ?></td>
+                                    <td><?= date('M j', strtotime($ticket['created_at'])) ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                 <?php else: ?>
-                    <p class="text-muted">No recent work orders</p>
+                    <p class="text-muted">No recent tickets</p>
                 <?php endif; ?>
             </div>
         </div>
@@ -106,27 +93,27 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-exclamation-triangle"></i> Overdue Invoices</h5>
+                <h5><i class="bi bi-exclamation-triangle"></i> Overdue Tickets</h5>
             </div>
             <div class="card-body">
-                <?php if ($overdue_invoices): ?>
-                    <?php foreach ($overdue_invoices as $invoice): ?>
+                <?php if ($overdue_tickets): ?>
+                    <?php foreach ($overdue_tickets as $ticket): ?>
                     <div class="border-bottom pb-2 mb-2">
-                        <strong><?= htmlspecialchars($invoice['company_name']) ?></strong><br>
+                        <strong><?= htmlspecialchars($ticket['customer_name']) ?></strong><br>
                         <small class="text-muted">
-                            Invoice #<?= $invoice['invoice_number'] ?><br>
-                            Due: <?= date('M j, Y', strtotime($invoice['due_date'])) ?><br>
-                            Amount: $<?= number_format($invoice['total_amount'], 2) ?>
+                            <?= htmlspecialchars($ticket['ticket_number']) ?><br>
+                            <?= htmlspecialchars($ticket['subject']) ?><br>
+                            Created: <?= date('M j, Y', strtotime($ticket['created_at'])) ?>
                         </small>
                         <div class="mt-1">
-                            <a href="/SupporTracker/invoice?id=<?= $invoice['id'] ?>" class="btn btn-xs btn-outline-danger">View</a>
+                            <a href="/SupporTracker/tickets?id=<?= $ticket['id'] ?>" class="btn btn-sm btn-outline-danger">View</a>
                         </div>
                     </div>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <p class="text-muted text-center">
-                        <i class="fas fa-check-circle text-success"></i><br>
-                        No overdue invoices
+                        <i class="bi bi-check-circle text-success"></i><br>
+                        No overdue tickets
                     </p>
                 <?php endif; ?>
             </div>
@@ -134,62 +121,21 @@
         
         <div class="card mt-3">
             <div class="card-header">
-                <h5><i class="fas fa-plus"></i> Quick Actions</h5>
+                <h5><i class="bi bi-plus"></i> Quick Actions</h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <button class="btn btn-primary btn-sm" onclick="openWorkOrderModal()">
-                        <i class="fas fa-plus"></i> New Work Order
+                    <button class="btn btn-primary btn-sm" onclick="createTicket()">
+                        <i class="bi bi-plus"></i> New Ticket
                     </button>
-                    <a href="/SupporTracker/companies" class="btn btn-success btn-sm">
-                        <i class="fas fa-building"></i> Add Company
+                    <a href="/SupporTracker/customers" class="btn btn-success btn-sm">
+                        <i class="bi bi-people"></i> Add Customer
                     </a>
                     <a href="/SupporTracker/invoices" class="btn btn-info btn-sm">
-                        <i class="fas fa-file-invoice"></i> Create Invoice
+                        <i class="bi bi-receipt"></i> Create Invoice
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<?php else: ?>
-<!-- Basic Dashboard for other roles -->
-<div class="row">
-    <div class="col-12">
-        <h1>Dashboard</h1>
-        
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h2 class="text-primary"><?= $stats['companies'] ?></h2>
-                        <p class="card-text">Active Companies</p>
-                        <a href="/SupporTracker/companies" class="btn btn-primary btn-sm">View Companies</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h2 class="text-success"><?= $stats['assets'] ?></h2>
-                        <p class="card-text">Total Assets</p>
-                        <a href="/SupporTracker/assets" class="btn btn-success btn-sm">View Assets</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h2 class="text-info"><?= $stats['employees'] ?></h2>
-                        <p class="card-text">Employees</p>
-                        <a href="/SupporTracker/employees" class="btn btn-info btn-sm">View Employees</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<?php endif; ?>

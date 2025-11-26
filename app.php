@@ -12,7 +12,7 @@ if (empty($path)) {
 }
 
 // Route to controllers
-$controllerFile = "controllers_v2/{$path}.php";
+$controllerFile = "controllers/{$path}.php";
 
 if (file_exists($controllerFile)) {
     include $controllerFile;

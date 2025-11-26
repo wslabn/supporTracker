@@ -1,5 +1,5 @@
 <?php
-require_once 'config_v2.php';
+require_once 'config.php';
 
 // Check if user is admin or manager for locations
 if (!in_array($_SESSION['user_role'], ['admin', 'manager'])) {

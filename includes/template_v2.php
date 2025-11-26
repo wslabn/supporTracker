@@ -45,7 +45,7 @@ function renderModernPage($title, $pageTitle, $contentFile, $data = [], $headerA
     extract($data);
     
     ob_start();
-    include "views_v2/$contentFile";
+    include "views/$contentFile";
     $content = ob_get_clean();
     
     $template = new ModernTemplate();
