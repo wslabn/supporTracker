@@ -1,8 +1,8 @@
 <?php
 require_once 'config.php';
 
-// Check if user is admin
-if ($_SESSION['user_role'] !== 'admin') {
+// Check if user is admin or manager
+if (!in_array($_SESSION['user_role'], ['admin', 'manager'])) {
     header('Location: /SupporTracker/dashboard');
     exit;
 }
@@ -123,6 +123,28 @@ if ($_POST) {
         $success = "Service category added successfully!";
         $activeTab = 'service-categories';
     }
+    
+    // Handle service pricing
+    if (isset($_POST['save_service_pricing'])) {
+        $pricing = [
+            'price_virus_removal' => $_POST['price_virus_removal'],
+            'price_os_install' => $_POST['price_os_install'],
+            'price_data_recovery' => $_POST['price_data_recovery'],
+            'price_hardware_install' => $_POST['price_hardware_install'],
+            'price_software_install' => $_POST['price_software_install'],
+            'price_network_setup' => $_POST['price_network_setup'],
+            'price_tune_up' => $_POST['price_tune_up'],
+            'default_hourly_rate' => $_POST['default_hourly_rate']
+        ];
+        
+        foreach ($pricing as $key => $value) {
+            $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+            $stmt->execute([$key, $value, $value]);
+        }
+        
+        $success = "Service pricing saved successfully!";
+        $activeTab = 'service-pricing';
+    }
 }
 
 // Get current settings
@@ -169,11 +191,23 @@ $asset_categories = $pdo->query("SELECT * FROM asset_categories ORDER BY name")-
 // Get service categories
 $service_categories = $pdo->query("SELECT * FROM service_categories ORDER BY name")->fetchAll();
 
+// Get service pricing
+$service_prices = [];
+try {
+    $pricing = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'price_%'")->fetchAll();
+    foreach ($pricing as $price) {
+        $key = str_replace('price_', '', $price['setting_key']);
+        $service_prices[$key] = $price['setting_value'];
+    }
+} catch (Exception $e) {
+    // No pricing set yet
+}
+
 renderModernPage(
     'Settings - SupportTracker',
     'System Settings',
     'settings.php',
-    compact('current_settings', 'success', 'error', 'activeTab', 'locations', 'users', 'asset_categories', 'service_categories'),
+    compact('current_settings', 'success', 'error', 'activeTab', 'locations', 'users', 'asset_categories', 'service_categories', 'service_prices'),
     ''
 );
 ?>

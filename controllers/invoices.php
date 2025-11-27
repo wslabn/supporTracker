@@ -1,6 +1,16 @@
 <?php
 require_once 'config.php';
 
+function getInvoiceStatusColor($status) {
+    switch (strtolower($status)) {
+        case 'paid': return 'success';
+        case 'pending': return 'warning';
+        case 'overdue': return 'danger';
+        case 'draft': return 'secondary';
+        default: return 'primary';
+    }
+}
+
 // Get invoices
 $invoices = $pdo->query("
     SELECT i.*, c.name as customer_name

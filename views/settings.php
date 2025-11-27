@@ -44,6 +44,11 @@
                             <i class="bi bi-tools me-1"></i>Service Categories
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link <?= $activeTab === 'service-pricing' ? 'active' : '' ?>" id="service-pricing-tab" data-bs-toggle="tab" data-bs-target="#service-pricing" type="button" role="tab">
+                            <i class="bi bi-currency-dollar me-1"></i>Service Pricing
+                        </button>
+                    </li>
                 </ul>
             </div>
             <div class="card-body">
@@ -75,10 +80,7 @@
                                 </div>
                                 <?php endif; ?>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Default Hourly Rate ($)</label>
-                                <input type="number" name="default_hourly_rate" class="form-control" value="<?= $current_settings['default_hourly_rate'] ?>" step="0.01" required>
-                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Default Tax Rate (%)</label>
                                 <input type="number" name="default_tax_rate" class="form-control" value="<?= $current_settings['default_tax_rate'] ?>" step="0.01" min="0" max="100">
@@ -461,6 +463,103 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Service Pricing Tab -->
+                    <div class="tab-pane fade <?= $activeTab === 'service-pricing' ? 'show active' : '' ?>" id="service-pricing" role="tabpanel">
+                        <h6>Default Service Pricing</h6>
+                        <p class="text-muted">Set default prices for common services. These will auto-populate in ticket billing.</p>
+                        
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Virus/Malware Removal</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_virus_removal" class="form-control" value="<?= $service_prices['virus_removal'] ?? 125 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">OS Installation</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_os_install" class="form-control" value="<?= $service_prices['os_install'] ?? 150 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Data Recovery</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_data_recovery" class="form-control" value="<?= $service_prices['data_recovery'] ?? 200 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Hardware Installation</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_hardware_install" class="form-control" value="<?= $service_prices['hardware_install'] ?? 75 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Software Installation</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_software_install" class="form-control" value="<?= $service_prices['software_install'] ?? 50 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Network Setup</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_network_setup" class="form-control" value="<?= $service_prices['network_setup'] ?? 100 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">System Tune-up</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="price_tune_up" class="form-control" value="<?= $service_prices['tune_up'] ?? 85 ?>" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Default Hourly Rate</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="default_hourly_rate" class="form-control" value="<?= $current_settings['default_hourly_rate'] ?>" step="0.01" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" name="save_service_pricing" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>
+                                Save Service Pricing
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

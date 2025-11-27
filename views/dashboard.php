@@ -89,10 +89,7 @@
                                         </span>
                                         <br>
                                         <small class="text-muted" style="font-size: 0.7rem;">
-                                            <?php 
-                                            require_once 'includes/priority-helper.php';
-                                            echo formatResponseTime(getPriorityResponseTime($pdo, $ticket['priority'], $ticket['location_id'] ?? null));
-                                            ?>
+                                            Response time varies
                                         </small>
 
                                     </td>

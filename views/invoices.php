@@ -68,15 +68,3 @@ function downloadInvoice(id) {
 }
 </script>
 
-<?php
-function getInvoiceStatusColor($status) {
-    switch ($status) {
-        case 'draft': return 'secondary';
-        case 'sent': return 'primary';
-        case 'paid': return 'success';
-        case 'overdue': return 'danger';
-        case 'cancelled': return 'dark';
-        default: return 'secondary';
-    }
-}
-?>

@@ -17,7 +17,8 @@
                             <span class="badge bg-<?= 
                                 $ticket['status'] === 'resolved' ? 'success' : 
                                 ($ticket['status'] === 'in_progress' ? 'warning' : 
-                                ($ticket['status'] === 'waiting' ? 'info' : 'secondary')) 
+                                ($ticket['status'] === 'waiting' ? 'info' : 
+                                ($ticket['status'] === 'waiting_payment' ? 'primary' : 'secondary'))) 
                             ?>">
                                 <?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?>
                             </span>
@@ -85,6 +86,11 @@
                             <i class="bi bi-key me-1"></i>Credentials
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="asset-update-tab" data-bs-toggle="tab" data-bs-target="#asset-update" type="button" role="tab">
+                            <i class="bi bi-pc-display me-1"></i>Update Asset
+                        </button>
+                    </li>
                     <?php endif; ?>
                     <?php if ($messagingEnabled): ?>
                     <li class="nav-item" role="presentation">
@@ -93,6 +99,11 @@
                         </button>
                     </li>
                     <?php endif; ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab">
+                            <i class="bi bi-receipt me-1"></i>Billing
+                        </button>
+                    </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="actions-tab" data-bs-toggle="tab" data-bs-target="#actions" type="button" role="tab">
                             <i class="bi bi-lightning me-1"></i>Actions
@@ -372,6 +383,103 @@
                         <p class="text-muted">No credentials stored for this asset. Add credentials above.</p>
                         <?php endif; ?>
                     </div>
+                    
+                    <!-- Update Asset Tab -->
+                    <div class="tab-pane fade" id="asset-update" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-pc-display me-2"></i>Update Asset Specifications</h6>
+                                <small class="text-muted">Update asset specs when installing upgrades or replacements</small>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST">
+                                    <input type="hidden" name="update_asset_specs" value="1">
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Asset Name</label>
+                                                <input type="text" class="form-control" name="asset_name" value="<?= htmlspecialchars($ticket['asset_name']) ?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Model</label>
+                                                <input type="text" class="form-control" name="model" value="<?= htmlspecialchars($ticket['asset_model']) ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Serial Number</label>
+                                                <input type="text" class="form-control" name="serial_number" value="<?= htmlspecialchars($ticket['serial_number']) ?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Operating System</label>
+                                                <input type="text" class="form-control" name="operating_system" value="<?= htmlspecialchars($assetDetails['operating_system'] ?? '') ?>" placeholder="Windows 11 Pro">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">CPU</label>
+                                                <input type="text" class="form-control" name="cpu" value="<?= htmlspecialchars($assetDetails['cpu'] ?? '') ?>" placeholder="Intel i7-12700K">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">RAM (GB)</label>
+                                                <input type="number" class="form-control" name="ram_gb" value="<?= $assetDetails['ram_gb'] ?? '' ?>" placeholder="16">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Storage (GB)</label>
+                                                <input type="number" class="form-control" name="storage_gb" value="<?= $assetDetails['storage_gb'] ?? '' ?>" placeholder="1000">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Graphics Card</label>
+                                                <input type="text" class="form-control" name="graphics_card" value="<?= htmlspecialchars($assetDetails['graphics_card'] ?? '') ?>" placeholder="NVIDIA RTX 4060">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Network Card</label>
+                                                <input type="text" class="form-control" name="network_card" value="<?= htmlspecialchars($assetDetails['network_card'] ?? '') ?>" placeholder="Realtek PCIe GbE">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Update Notes</label>
+                                        <textarea class="form-control" name="update_notes" rows="3" placeholder="Describe what was upgraded or changed..." required></textarea>
+                                        <small class="text-muted">This will be added as a work log entry</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Hours Worked</label>
+                                        <input type="number" class="form-control" name="hours_logged" step="0.25" placeholder="1.0">
+                                        <small class="text-muted">Time spent on the upgrade</small>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle me-1"></i>Update Asset Specs
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     <?php endif; ?>
 
                     <!-- Messages Tab -->
@@ -419,6 +527,211 @@
                         <?php endif; ?>
                     </div>
                     <?php endif; ?>
+                    
+                    <!-- Billing Tab -->
+                    <div class="tab-pane fade" id="billing" role="tabpanel">
+                        <!-- Add Items Card -->
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#addItemsCollapse" style="cursor: pointer;">
+                                <h6 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Services & Labor</h6>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse" id="addItemsCollapse">
+                                <div class="card-body">
+                                    <!-- Predefined Services -->
+                                    <h6><i class="bi bi-list-check me-2"></i>Add Service</h6>
+                                    <form method="POST" class="mb-4">
+                                        <input type="hidden" name="add_service_item" value="1">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <select class="form-select" name="service_type" onchange="updateServicePrice(this)">
+                                                    <option value="">Select Service...</option>
+                                                    <option value="virus_removal" data-price="<?= $servicePrices['virus_removal'] ?? 125 ?>">Virus/Malware Removal - $<?= $servicePrices['virus_removal'] ?? 125 ?></option>
+                                                    <option value="os_install" data-price="<?= $servicePrices['os_install'] ?? 150 ?>">OS Installation - $<?= $servicePrices['os_install'] ?? 150 ?></option>
+                                                    <option value="data_recovery" data-price="<?= $servicePrices['data_recovery'] ?? 200 ?>">Data Recovery - $<?= $servicePrices['data_recovery'] ?? 200 ?></option>
+                                                    <option value="hardware_install" data-price="<?= $servicePrices['hardware_install'] ?? 75 ?>">Hardware Installation - $<?= $servicePrices['hardware_install'] ?? 75 ?></option>
+                                                    <option value="software_install" data-price="<?= $servicePrices['software_install'] ?? 50 ?>">Software Installation - $<?= $servicePrices['software_install'] ?? 50 ?></option>
+                                                    <option value="network_setup" data-price="<?= $servicePrices['network_setup'] ?? 100 ?>">Network Setup - $<?= $servicePrices['network_setup'] ?? 100 ?></option>
+                                                    <option value="tune_up" data-price="<?= $servicePrices['tune_up'] ?? 85 ?>">System Tune-up - $<?= $servicePrices['tune_up'] ?? 85 ?></option>
+                                                    <option value="custom">Custom Service</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="number" class="form-control" name="price" id="service_price" step="0.01" placeholder="Price" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-success w-100">
+                                                    <i class="bi bi-plus me-1"></i>Add Service
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <input type="text" class="form-control" name="custom_description" id="custom_description" placeholder="Custom service description" style="display: none;">
+                                        </div>
+                                    </form>
+                                    
+                                    <hr>
+                                    
+                                    <!-- Custom Labor -->
+                                    <h6><i class="bi bi-clock me-2"></i>Add Labor</h6>
+                                    <form method="POST">
+                                        <input type="hidden" name="add_labor_item" value="1">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" name="description" placeholder="Labor description" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" class="form-control" name="hours" step="0.25" placeholder="Hours" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" class="form-control" name="rate" step="0.01" value="75" placeholder="Rate">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" class="form-control" name="total" id="labor_total" step="0.01" placeholder="Total" readonly>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="submit" class="btn btn-success w-100">
+                                                    <i class="bi bi-plus me-1"></i>Add Labor
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Combined Invoice Preview -->
+                        <?php 
+                        $allInvoiceItems = [];
+                        $subtotal = 0;
+                        
+                        // Add billing items (services/labor)
+                        foreach ($billingItems as $item) {
+                            $allInvoiceItems[] = [
+                                'type' => 'service',
+                                'id' => $item['id'],
+                                'description' => $item['description'],
+                                'quantity' => $item['quantity'],
+                                'unit_price' => $item['unit_price'],
+                                'total_price' => $item['total_price'],
+                                'discount' => $item['discount'] ?? 0,
+                                'taxable' => $item['taxable'] ?? true
+                            ];
+                        }
+                        
+                        // Add parts with sell prices
+                        foreach ($parts as $part) {
+                            if ($part['sell_price'] > 0) {
+                                $allInvoiceItems[] = [
+                                    'type' => 'part',
+                                    'id' => $part['id'],
+                                    'description' => $part['description'],
+                                    'quantity' => 1,
+                                    'unit_price' => $part['sell_price'],
+                                    'total_price' => $part['sell_price'],
+                                    'discount' => $part['discount'] ?? 0,
+                                    'taxable' => $part['taxable'] ?? true
+                                ];
+                            }
+                        }
+                        
+                        // Calculate subtotal with discounts
+                        $subtotal = 0;
+                        ?>
+                        
+                        <?php if ($allInvoiceItems): ?>
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Invoice Preview - All Items</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Qty</th>
+                                            <th>Rate</th>
+                                            <th>Discount</th>
+                                            <th>Total</th>
+                                            <th>Taxable</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($allInvoiceItems as $item): 
+                                            $discount = $item['discount'] ?? 0;
+                                            $discountAmount = $item['unit_price'] * ($discount / 100);
+                                            $finalPrice = $item['unit_price'] - $discountAmount;
+                                            $finalTotal = $finalPrice * $item['quantity'];
+                                        ?>
+                                        <tr>
+                                            <td>
+                                                <?= htmlspecialchars($item['description']) ?>
+                                                <small class="text-muted d-block"><?= ucfirst($item['type']) ?></small>
+                                            </td>
+                                            <td><?= $item['quantity'] ?></td>
+                                            <td>
+                                                <span id="price_<?= $item['type'] ?>_<?= $item['id'] ?>">$<?= number_format($item['unit_price'], 2) ?></span>
+                                                <button class="btn btn-sm btn-outline-primary ms-1" onclick="editPrice('<?= $item['type'] ?>', <?= $item['id'] ?>, <?= $item['unit_price'] ?>)">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <span id="discount_<?= $item['type'] ?>_<?= $item['id'] ?>"><?= $discount ?>%</span>
+                                                <button class="btn btn-sm btn-outline-warning ms-1" onclick="editDiscount('<?= $item['type'] ?>', <?= $item['id'] ?>, <?= $discount ?>)">
+                                                    <i class="bi bi-percent"></i>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <span id="total_<?= $item['type'] ?>_<?= $item['id'] ?>">$<?= number_format($finalTotal, 2) ?></span>
+                                                <?php if ($discount > 0): ?>
+                                                <br><small class="text-success">Saved $<?= number_format($discountAmount * $item['quantity'], 2) ?></small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm <?= $item['taxable'] ? 'btn-success' : 'btn-outline-secondary' ?>" onclick="toggleTax('<?= $item['type'] ?>', <?= $item['id'] ?>, this)">
+                                                    <?= $item['taxable'] ? 'Yes' : 'No' ?>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <?php if ($item['type'] === 'service'): ?>
+                                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this item?')">
+                                                    <input type="hidden" name="delete_billing_item" value="<?= $item['id'] ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                                <?php else: ?>
+                                                <small class="text-muted">From Parts</small>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php 
+                                        $subtotal += $finalTotal; // Use discounted total
+                                        endforeach; ?>
+                                        <tr class="table-info">
+                                            <td colspan="4"><strong>Subtotal</strong></td>
+                                            <td><strong>$<?= number_format($subtotal, 2) ?></strong></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <?php if ($ticket['status'] === 'resolved'): ?>
+                            <div class="card-footer text-center">
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="create_invoice" value="1">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-receipt me-2"></i>Create Invoice & Mark Waiting Payment
+                                    </button>
+                                </form>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php else: ?>
+                        <p class="text-muted">No billing items added yet. Add services or labor above, and parts will appear from the Parts tab.</p>
+                        <?php endif; ?>
+                    </div>
                     
                     <!-- Quick Actions Tab -->
                     <div class="tab-pane fade" id="actions" role="tabpanel">
@@ -585,6 +898,19 @@
                             </form>
                             <?php endif; ?>
                             
+                            <?php if ($ticket['status'] === 'resolved'): ?>
+                            <!-- Invoice Actions -->
+                            <hr class="my-3">
+                            <small class="text-muted text-uppercase fw-bold">Billing Actions</small>
+                            
+                            <form method="POST" style="display: inline;" class="mt-2">
+                                <input type="hidden" name="create_invoice" value="1">
+                                <button type="submit" class="btn btn-success w-100 mb-2">
+                                    <i class="bi bi-receipt me-1"></i>Create Invoice & Mark Waiting Payment
+                                </button>
+                            </form>
+                            <?php endif; ?>
+                            
                             <a href="/SupporTracker/tickets" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-1"></i>Back to Tickets
                             </a>
@@ -685,6 +1011,7 @@
                             <option value="in_progress">In Progress</option>
                             <option value="waiting">Waiting (Customer/Parts)</option>
                             <option value="resolved">Resolved</option>
+                            <option value="waiting_payment">Waiting Payment</option>
                             <option value="closed">Closed</option>
                         </select>
                     </div>
@@ -752,5 +1079,100 @@ function showTicketPassword(button, password) {
             button.innerHTML = '<i class="bi bi-eye"></i> Show';
         }, 3000);
     }
+}
+
+function updateServicePrice(select) {
+    const option = select.options[select.selectedIndex];
+    const price = option.getAttribute('data-price');
+    const customDesc = document.getElementById('custom_description');
+    
+    if (select.value === 'custom') {
+        customDesc.style.display = 'block';
+        customDesc.required = true;
+        document.getElementById('service_price').value = '';
+    } else {
+        customDesc.style.display = 'none';
+        customDesc.required = false;
+        document.getElementById('service_price').value = price || '';
+    }
+}
+
+// Auto-calculate labor total
+document.addEventListener('DOMContentLoaded', function() {
+    const hoursInput = document.querySelector('input[name="hours"]');
+    const rateInput = document.querySelector('input[name="rate"]');
+    const totalInput = document.getElementById('labor_total');
+    
+    function calculateLabor() {
+        const hours = parseFloat(hoursInput?.value) || 0;
+        const rate = parseFloat(rateInput?.value) || 0;
+        if (totalInput) {
+            totalInput.value = (hours * rate).toFixed(2);
+        }
+    }
+    
+    if (hoursInput) hoursInput.addEventListener('input', calculateLabor);
+    if (rateInput) rateInput.addEventListener('input', calculateLabor);
+});
+
+function toggleTax(itemType, itemId, button) {
+    const formData = new FormData();
+    formData.append('toggle_tax', '1');
+    formData.append('item_type', itemType);
+    formData.append('item_id', itemId);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            // Toggle button appearance
+            if (button.classList.contains('btn-success')) {
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-secondary');
+                button.textContent = 'No';
+            } else {
+                button.classList.remove('btn-outline-secondary');
+                button.classList.add('btn-success');
+                button.textContent = 'Yes';
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function editPrice(itemType, itemId, currentPrice) {
+    const newPrice = prompt('Enter new price:', currentPrice);
+    if (newPrice && !isNaN(newPrice)) {
+        updateItemField(itemType, itemId, 'price', newPrice);
+    }
+}
+
+function editDiscount(itemType, itemId, currentDiscount) {
+    const newDiscount = prompt('Enter discount percentage (0-100):', currentDiscount);
+    if (newDiscount !== null && !isNaN(newDiscount) && newDiscount >= 0 && newDiscount <= 100) {
+        updateItemField(itemType, itemId, 'discount', newDiscount);
+    }
+}
+
+function updateItemField(itemType, itemId, field, value) {
+    const formData = new FormData();
+    formData.append('update_item_field', '1');
+    formData.append('item_type', itemType);
+    formData.append('item_id', itemId);
+    formData.append('field', field);
+    formData.append('value', value);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
 }
 </script>

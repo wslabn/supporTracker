@@ -61,10 +61,10 @@
                         <div class="small text-muted">Assets</div>
                     </div>
                     <div class="col-4">
-                        <div class="fw-bold text-<?= $customer['status'] === 'active' ? 'success' : 'secondary' ?>">
-                            <i class="bi bi-<?= $customer['status'] === 'active' ? 'check-circle' : 'pause-circle' ?>"></i>
+                        <div class="fw-bold text-<?= ($customer['status'] ?? 'active') === 'active' ? 'success' : 'secondary' ?>">
+                            <i class="bi bi-<?= ($customer['status'] ?? 'active') === 'active' ? 'check-circle' : 'pause-circle' ?>"></i>
                         </div>
-                        <div class="small text-muted"><?= ucfirst($customer['status']) ?></div>
+                        <div class="small text-muted"><?= ucfirst($customer['status'] ?? 'active') ?></div>
                     </div>
                 </div>
             </div>
@@ -196,7 +196,7 @@
 
 <script>
 function viewCustomer(id) {
-    window.location.href = `/SupporTracker/customers/${id}`;
+    window.location.href = `/SupporTracker/customers?id=${id}`;
 }
 
 function createTicket(customerId) {

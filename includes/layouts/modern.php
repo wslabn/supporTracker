@@ -139,7 +139,7 @@
                                 Reports
                             </a>
                         </li>
-                        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                        <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'manager'])): ?>
                         <li>
                             <a href="/SupporTracker/settings" class="nav-link <?= $this->isActive('settings') ?>">
                                 <i class="bi bi-gear me-2"></i>
@@ -159,7 +159,7 @@
                         </a>
                         <ul class="dropdown-menu text-small shadow">
                             <li><a class="dropdown-item" href="/SupporTracker/profile">Profile</a></li>
-                            <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                            <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'manager'])): ?>
                             <li><a class="dropdown-item" href="/SupporTracker/settings">Settings</a></li>
                             <?php endif; ?>
                             <li><hr class="dropdown-divider"></li>

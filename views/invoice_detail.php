@@ -14,21 +14,35 @@
             </div>
             <div class="card-body">
                 <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h6>Bill To:</h6>
-                        <strong><?= htmlspecialchars($invoice['company_name']) ?></strong><br>
-                        <?php if ($invoice['company_address']): ?>
-                            <?= nl2br(htmlspecialchars($invoice['company_address'])) ?><br>
+                    <div class="col-md-4">
+
+                        <h6>From:</h6>
+                        <strong><?= htmlspecialchars($locationInfo['name'] ?? 'SupportTracker') ?></strong><br>
+                        <?php if (!empty($locationInfo['address'])): ?>
+                            <?= nl2br(htmlspecialchars($locationInfo['address'])) ?><br>
                         <?php endif; ?>
-                        <?php if ($invoice['company_email']): ?>
-                            <?= htmlspecialchars($invoice['company_email']) ?>
+                        <?php if (!empty($locationInfo['phone'])): ?>
+                            <?= htmlspecialchars($locationInfo['phone']) ?><br>
+                        <?php endif; ?>
+                        <?php if (!empty($locationInfo['email'])): ?>
+                            <?= htmlspecialchars($locationInfo['email']) ?>
                         <?php endif; ?>
                     </div>
-                    <div class="col-md-6 text-end">
+                    <div class="col-md-4">
+                        <h6>Bill To:</h6>
+                        <strong><?= htmlspecialchars($invoice['customer_name']) ?></strong><br>
+                        <?php if ($invoice['customer_address']): ?>
+                            <?= nl2br(htmlspecialchars($invoice['customer_address'])) ?><br>
+                        <?php endif; ?>
+                        <?php if ($invoice['customer_email']): ?>
+                            <?= htmlspecialchars($invoice['customer_email']) ?>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-4 text-end">
                         <table class="table table-sm table-borderless">
-                            <tr><td><strong>Invoice Date:</strong></td><td><?= date('M j, Y', strtotime($invoice['invoice_date'])) ?></td></tr>
+                            <tr><td><strong>Invoice Date:</strong></td><td><?= date('M j, Y', strtotime($invoice['issue_date'])) ?></td></tr>
                             <tr><td><strong>Due Date:</strong></td><td><?= date('M j, Y', strtotime($invoice['due_date'])) ?></td></tr>
-                            <tr><td><strong>Amount Due:</strong></td><td><strong>$<?= number_format($invoice['balance'] ?? $invoice['balance_due'] ?? 0, 2) ?></strong></td></tr>
+                            <tr><td><strong>Amount Due:</strong></td><td><strong>$<?= number_format($invoice['total'] ?? 0, 2) ?></strong></td></tr>
                         </table>
                     </div>
                 </div>
@@ -48,9 +62,6 @@
                             <tr>
                                 <td>
                                     <?= htmlspecialchars($item['description']) ?>
-                                    <?php if ($item['work_order_title']): ?>
-                                        <br><small class="text-muted">Work Order: <?= htmlspecialchars($item['work_order_title']) ?></small>
-                                    <?php endif; ?>
                                 </td>
                                 <td><?= $item['quantity'] ?></td>
                                 <td>$<?= number_format($item['unit_price'], 2) ?></td>
@@ -71,9 +82,9 @@
                             <?php endif; ?>
                             <tr>
                                 <th colspan="3" class="text-end">Total:</th>
-                                <th>$<?= number_format($invoice['total_amount'], 2) ?></th>
+                                <th>$<?= number_format($invoice['total'] ?? 0, 2) ?></th>
                             </tr>
-                            <?php if ($invoice['paid_amount'] > 0): ?>
+                            <?php if (($invoice['paid_amount'] ?? 0) > 0): ?>
                             <tr>
                                 <td colspan="3" class="text-end">Paid:</td>
                                 <td>$<?= number_format($invoice['paid_amount'], 2) ?></td>
@@ -87,7 +98,7 @@
                     </table>
                 </div>
 
-                <?php if ($invoice['notes']): ?>
+                <?php if (!empty($invoice['notes'])): ?>
                 <div class="mt-3">
                     <h6>Notes:</h6>
                     <p><?= nl2br(htmlspecialchars($invoice['notes'])) ?></p>

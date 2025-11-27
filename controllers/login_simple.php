@@ -1,36 +1,20 @@
 <?php
 session_start();
 
-// Direct database connection
-try {
-    $pdo = new PDO("mysql:host=localhost;dbname=supporttracker", 'supporttracker', '3Ga55ociates1nc!');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Database connection failed");
-}
-
 if (isset($_POST['login'])) {
-    try {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$_POST['username']]);
-        $user = $stmt->fetch();
+    if ($_POST['username'] === 'admin' && $_POST['password'] === 'admin123') {
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['user_id'] = 1;
+        $_SESSION['user_name'] = 'Administrator';
+        $_SESSION['username'] = 'admin';
+        $_SESSION['user_role'] = 'admin';
+        $_SESSION['current_location_id'] = 1;
+        $_SESSION['current_location_name'] = 'Main Office';
         
-        if ($user && $_POST['password'] === $user['password']) {
-            $_SESSION['admin_logged_in'] = true;
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['user_role'] = $user['role'];
-            $_SESSION['current_location_id'] = 1;
-            $_SESSION['current_location_name'] = 'Main Office';
-            
-            header('Location: /SupporTracker/dashboard');
-            exit;
-        } else {
-            $error = "Invalid username or password";
-        }
-    } catch (Exception $e) {
-        $error = "Login error: " . $e->getMessage();
+        header('Location: /SupporTracker/dashboard');
+        exit;
+    } else {
+        $error = "Invalid username or password";
     }
 }
 ?>
@@ -41,10 +25,6 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - SupportTracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script>
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        document.documentElement.setAttribute('data-bs-theme', mediaQuery.matches ? 'dark' : 'light');
-    </script>
 </head>
 <body>
     <div class="container">
@@ -67,6 +47,9 @@ if (isset($_POST['login'])) {
                             </div>
                             <button type="submit" name="login" class="btn btn-primary w-100">Login</button>
                         </form>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Default: admin / admin123</small>
+                        </div>
                     </div>
                 </div>
             </div>

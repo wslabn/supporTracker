@@ -1,6 +1,27 @@
 <?php
 $asset_id = $_GET['id'] ?? 0;
 
+// Handle asset specification updates
+if ($_POST && isset($_POST['update_asset_specs'])) {
+    $stmt = $pdo->prepare("
+        UPDATE assets SET 
+            operating_system = ?, cpu = ?, ram_gb = ?, 
+            storage_gb = ?, graphics_card = ?, network_card = ?
+        WHERE id = ?
+    ");
+    $stmt->execute([
+        $_POST['operating_system'],
+        $_POST['cpu'],
+        $_POST['ram_gb'] ?: null,
+        $_POST['storage_gb'] ?: null,
+        $_POST['graphics_card'],
+        $_POST['network_card'],
+        $_POST['asset_id']
+    ]);
+    header("Location: /SupporTracker/asset_detail?id=" . $_POST['asset_id']);
+    exit;
+}
+
 // Get asset details with company info
 $stmt = $pdo->prepare("
     SELECT a.*, c.name as company_name, e.name as employee_name, ac.name as category_name 

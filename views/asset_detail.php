@@ -51,6 +51,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#specifications">
+                    <i class="bi bi-cpu"></i> Specifications
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#workorders">
                     <i class="fas fa-wrench"></i> Work Orders (<?= count($work_orders) ?>)
                 </a>
@@ -105,6 +110,65 @@
                 </div>
             </div>
 
+            <div class="tab-pane fade" id="specifications">
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="bi bi-cpu me-2"></i>Hardware Specifications</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="update_asset_specs" value="1">
+                            <input type="hidden" name="asset_id" value="<?= $asset['id'] ?>">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Operating System</label>
+                                        <input type="text" class="form-control" name="operating_system" value="<?= htmlspecialchars($asset['operating_system'] ?? '') ?>" placeholder="Windows 11 Pro">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">CPU</label>
+                                        <input type="text" class="form-control" name="cpu" value="<?= htmlspecialchars($asset['cpu'] ?? '') ?>" placeholder="Intel i7-12700K">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">RAM (GB)</label>
+                                        <input type="number" class="form-control" name="ram_gb" value="<?= $asset['ram_gb'] ?? '' ?>" placeholder="16">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Storage (GB)</label>
+                                        <input type="number" class="form-control" name="storage_gb" value="<?= $asset['storage_gb'] ?? '' ?>" placeholder="1000">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Graphics Card</label>
+                                        <input type="text" class="form-control" name="graphics_card" value="<?= htmlspecialchars($asset['graphics_card'] ?? '') ?>" placeholder="NVIDIA RTX 4060">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Network Card</label>
+                                <input type="text" class="form-control" name="network_card" value="<?= htmlspecialchars($asset['network_card'] ?? '') ?>" placeholder="Realtek PCIe GbE">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i>Update Specifications
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
             <div class="tab-pane fade" id="workorders">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">

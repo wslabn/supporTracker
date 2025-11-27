@@ -7,7 +7,104 @@ if (!$ticketId) {
     exit;
 }
 
+// Get ticket details first
+$ticket = $pdo->prepare("
+    SELECT t.*, c.name as customer_name, c.phone as customer_phone, c.email as customer_email,
+           a.name as asset_name, a.model as asset_model, a.serial_number,
+           u.name as technician_name,
+           sc.name as service_category_name, sc.sla_hours
+    FROM tickets t
+    LEFT JOIN customers c ON t.customer_id = c.id
+    LEFT JOIN assets a ON t.asset_id = a.id
+    LEFT JOIN users u ON t.assigned_to = u.id
+    LEFT JOIN service_categories sc ON t.service_category_id = sc.id
+    WHERE t.id = ?
+");
+$ticket->execute([$ticketId]);
+$ticket = $ticket->fetch();
+
+if (!$ticket) {
+    header('Location: /SupporTracker/tickets');
+    exit;
+}
+
 if ($_POST) {
+    if (isset($_POST['add_service_item'])) {
+        $description = $_POST['service_type'] === 'custom' ? $_POST['custom_description'] : 
+            str_replace('_', ' ', ucwords($_POST['service_type'], '_'));
+        $price = (float)$_POST['price'];
+        
+        $stmt = $pdo->prepare("INSERT INTO ticket_billing_items (ticket_id, description, unit_price, total_price, item_type) VALUES (?, ?, ?, ?, 'service')");
+        $stmt->execute([$ticketId, $description, $price, $price]);
+        header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
+        exit;
+    }
+    
+    if (isset($_POST['add_labor_item'])) {
+        $hours = (float)$_POST['hours'];
+        $rate = (float)$_POST['rate'];
+        $total = $hours * $rate;
+        
+        $stmt = $pdo->prepare("INSERT INTO ticket_billing_items (ticket_id, description, quantity, unit_price, total_price, item_type) VALUES (?, ?, ?, ?, ?, 'labor')");
+        $stmt->execute([$ticketId, $_POST['description'], $hours, $rate, $total]);
+        header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
+        exit;
+    }
+    
+    if (isset($_POST['delete_billing_item'])) {
+        $stmt = $pdo->prepare("DELETE FROM ticket_billing_items WHERE id = ? AND ticket_id = ?");
+        $stmt->execute([$_POST['delete_billing_item'], $ticketId]);
+        header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
+        exit;
+    }
+    
+    if (isset($_POST['toggle_tax'])) {
+        $itemType = $_POST['item_type'];
+        $itemId = $_POST['item_id'];
+        
+        if ($itemType === 'service') {
+            // Toggle taxable status for billing items
+            $stmt = $pdo->prepare("UPDATE ticket_billing_items SET taxable = NOT COALESCE(taxable, 1) WHERE id = ? AND ticket_id = ?");
+            $stmt->execute([$itemId, $ticketId]);
+        } elseif ($itemType === 'part') {
+            // Toggle taxable status for parts
+            $stmt = $pdo->prepare("UPDATE ticket_parts SET taxable = NOT COALESCE(taxable, 1) WHERE id = ? AND ticket_id = ?");
+            $stmt->execute([$itemId, $ticketId]);
+        }
+        
+        // Return success for AJAX
+        http_response_code(200);
+        exit;
+    }
+    
+    if (isset($_POST['update_item_field'])) {
+        $itemType = $_POST['item_type'];
+        $itemId = $_POST['item_id'];
+        $field = $_POST['field'];
+        $value = $_POST['value'];
+        
+        if ($itemType === 'service') {
+            if ($field === 'price') {
+                $stmt = $pdo->prepare("UPDATE ticket_billing_items SET unit_price = ?, total_price = unit_price * quantity WHERE id = ? AND ticket_id = ?");
+                $stmt->execute([$value, $itemId, $ticketId]);
+            } elseif ($field === 'discount') {
+                $stmt = $pdo->prepare("UPDATE ticket_billing_items SET discount = ? WHERE id = ? AND ticket_id = ?");
+                $stmt->execute([$value, $itemId, $ticketId]);
+            }
+        } elseif ($itemType === 'part') {
+            if ($field === 'price') {
+                $stmt = $pdo->prepare("UPDATE ticket_parts SET sell_price = ? WHERE id = ? AND ticket_id = ?");
+                $stmt->execute([$value, $itemId, $ticketId]);
+            } elseif ($field === 'discount') {
+                $stmt = $pdo->prepare("UPDATE ticket_parts SET discount = ? WHERE id = ? AND ticket_id = ?");
+                $stmt->execute([$value, $itemId, $ticketId]);
+            }
+        }
+        
+        http_response_code(200);
+        exit;
+    }
+    
     if (isset($_POST['send_message'])) {
         $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_type, sender_name, message) VALUES (?, 'technician', ?, ?)");
         $stmt->execute([
@@ -48,8 +145,36 @@ if ($_POST) {
     if (isset($_POST['update_part_status'])) {
         $part_id = (int)$_POST['part_id'];
         $new_status = $_POST['new_status'];
+        
+        // Get part details for work log
+        $part = $pdo->prepare("SELECT description FROM ticket_parts WHERE id = ?");
+        $part->execute([$part_id]);
+        $part = $part->fetch();
+        
         $stmt = $pdo->prepare("UPDATE ticket_parts SET status = ? WHERE id = ? AND ticket_id = ?");
         $stmt->execute([$new_status, $part_id, $ticketId]);
+        
+        // Add work log entry for status changes
+        if ($part) {
+            $statusMessages = [
+                'quoted' => 'Quoted part: ',
+                'ordered' => 'Ordered part: ',
+                'received' => 'Received part: ',
+                'installed' => 'Installed part: '
+            ];
+            
+            $hours = $new_status === 'installed' ? 0.25 : null;
+            $message = ($statusMessages[$new_status] ?? 'Updated part status to ' . $new_status . ': ') . $part['description'];
+            
+            $stmt = $pdo->prepare("INSERT INTO ticket_updates (ticket_id, technician_id, update_type, content, hours_logged) VALUES (?, ?, 'note', ?, ?)");
+            $stmt->execute([
+                $ticketId,
+                $_SESSION['user_id'],
+                $message,
+                $hours
+            ]);
+        }
+        
         header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
         exit;
     }
@@ -91,6 +216,114 @@ if ($_POST) {
         exit;
     }
     
+    if (isset($_POST['update_asset_specs'])) {
+        if ($ticket['asset_id']) {
+            // Update asset specifications
+            $stmt = $pdo->prepare("
+                UPDATE assets SET 
+                    name = ?, model = ?, serial_number = ?, 
+                    operating_system = ?, cpu = ?, ram_gb = ?, 
+                    storage_gb = ?, graphics_card = ?, network_card = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $_POST['asset_name'],
+                $_POST['model'],
+                $_POST['serial_number'],
+                $_POST['operating_system'],
+                $_POST['cpu'],
+                $_POST['ram_gb'] ?: null,
+                $_POST['storage_gb'] ?: null,
+                $_POST['graphics_card'],
+                $_POST['network_card'],
+                $ticket['asset_id']
+            ]);
+            
+            // Add work log entry
+            $stmt = $pdo->prepare("INSERT INTO ticket_updates (ticket_id, technician_id, update_type, content, hours_logged) VALUES (?, ?, 'note', ?, ?)");
+            $stmt->execute([
+                $ticketId,
+                $_SESSION['user_id'],
+                "Asset specifications updated: " . $_POST['update_notes'],
+                $_POST['hours_logged'] ?: null
+            ]);
+        }
+        header("Location: /SupporTracker/ticket-detail?id=" . $ticketId);
+        exit;
+    }
+    
+    if (isset($_POST['create_invoice'])) {
+        try {
+            // Create invoice from ticket (trigger will generate invoice_number)
+            $stmt = $pdo->prepare("INSERT INTO invoices (customer_id, issue_date, due_date, status) VALUES (?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'draft')");
+            $stmt->execute([$ticket['customer_id']]);
+            $invoiceId = $pdo->lastInsertId();
+            
+            // Add billing items as invoice items
+            $billingItems = $pdo->prepare("SELECT * FROM ticket_billing_items WHERE ticket_id = ?");
+            $billingItems->execute([$ticketId]);
+            $items = $billingItems->fetchAll();
+            
+            foreach ($items as $item) {
+                $stmt = $pdo->prepare("INSERT INTO invoice_items (invoice_id, ticket_id, description, quantity, rate, amount) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([
+                    $invoiceId,
+                    $ticketId,
+                    $item['description'],
+                    $item['quantity'],
+                    $item['unit_price'],
+                    $item['total_price']
+                ]);
+            }
+            
+            // Add parts as invoice items
+            $partsStmt = $pdo->prepare("SELECT * FROM ticket_parts WHERE ticket_id = ? AND sell_price > 0");
+            $partsStmt->execute([$ticketId]);
+            $parts = $partsStmt->fetchAll();
+            
+            foreach ($parts as $part) {
+                $stmt = $pdo->prepare("INSERT INTO invoice_items (invoice_id, ticket_id, description, quantity, rate, amount) VALUES (?, ?, ?, 1, ?, ?)");
+                $stmt->execute([
+                    $invoiceId,
+                    $ticketId,
+                    $part['description'],
+                    $part['sell_price'],
+                    $part['sell_price']
+                ]);
+            }
+            
+            // Calculate totals
+            $subtotal = 0;
+            foreach ($items as $item) {
+                $subtotal += $item['total_price'];
+            }
+            foreach ($parts as $part) {
+                $subtotal += $part['sell_price'];
+            }
+            
+            // Update invoice totals
+            $stmt = $pdo->prepare("UPDATE invoices SET subtotal = ?, total = ? WHERE id = ?");
+            $stmt->execute([$subtotal, $subtotal, $invoiceId]);
+            
+            // Update ticket status to closed
+            $stmt = $pdo->prepare("UPDATE tickets SET status = 'closed' WHERE id = ?");
+            $stmt->execute([$ticketId]);
+            
+            // Add work log entry
+            $stmt = $pdo->prepare("INSERT INTO ticket_updates (ticket_id, technician_id, update_type, content) VALUES (?, ?, 'status_change', ?)");
+            $stmt->execute([
+                $ticketId,
+                $_SESSION['user_id'],
+                "Invoice created and ticket marked as closed"
+            ]);
+            
+            header("Location: /SupporTracker/invoices");
+            exit;
+        } catch (Exception $e) {
+            die("Invoice creation error: " . $e->getMessage());
+        }
+    }
+    
     if (isset($_POST['add_update'])) {
         $stmt = $pdo->prepare("INSERT INTO ticket_updates (ticket_id, technician_id, update_type, content, hours_logged, is_internal) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([
@@ -119,21 +352,7 @@ if ($_POST) {
     }
 }
 
-// Get ticket details
-$ticket = $pdo->prepare("
-    SELECT t.*, c.name as customer_name, c.phone as customer_phone, c.email as customer_email,
-           a.name as asset_name, a.model as asset_model, a.serial_number,
-           u.name as technician_name,
-           sc.name as service_category_name, sc.sla_hours
-    FROM tickets t
-    LEFT JOIN customers c ON t.customer_id = c.id
-    LEFT JOIN assets a ON t.asset_id = a.id
-    LEFT JOIN users u ON t.assigned_to = u.id
-    LEFT JOIN service_categories sc ON t.service_category_id = sc.id
-    WHERE t.id = ?
-");
-$ticket->execute([$ticketId]);
-$ticket = $ticket->fetch();
+// Ticket already loaded above
 
 if (!$ticket) {
     header('Location: /SupporTracker/tickets');
@@ -188,6 +407,7 @@ if ($messagingEnabled) {
 
 // Get asset credentials if ticket has an asset
 $assetCredentials = [];
+$assetDetails = [];
 if ($ticket['asset_id']) {
     $assetCredentials = $pdo->prepare("
         SELECT * FROM asset_credentials
@@ -196,13 +416,41 @@ if ($ticket['asset_id']) {
     ");
     $assetCredentials->execute([$ticket['asset_id']]);
     $assetCredentials = $assetCredentials->fetchAll();
+    
+    // Get full asset details for the update form
+    $assetDetails = $pdo->prepare("
+        SELECT * FROM assets WHERE id = ?
+    ");
+    $assetDetails->execute([$ticket['asset_id']]);
+    $assetDetails = $assetDetails->fetch() ?: [];
+}
+
+// Get billing items for this ticket
+$billingItems = $pdo->prepare("
+    SELECT * FROM ticket_billing_items
+    WHERE ticket_id = ?
+    ORDER BY created_at
+");
+$billingItems->execute([$ticketId]);
+$billingItems = $billingItems->fetchAll();
+
+// Get service pricing from settings
+$servicePrices = [];
+try {
+    $pricing = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'price_%'")->fetchAll();
+    foreach ($pricing as $price) {
+        $key = str_replace('price_', '', $price['setting_key']);
+        $servicePrices[$key] = $price['setting_value'];
+    }
+} catch (Exception $e) {
+    // No pricing set yet
 }
 
 renderModernPage(
     'Ticket Details - SupportTracker',
     'Ticket #' . ($ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT)),
     'ticket-detail.php',
-    compact('ticket', 'updates', 'parts', 'messages', 'messagingEnabled', 'assetCredentials'),
+    compact('ticket', 'updates', 'parts', 'messages', 'messagingEnabled', 'assetCredentials', 'assetDetails', 'billingItems', 'servicePrices'),
     ''
 );
 ?>

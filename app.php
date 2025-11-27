@@ -1,7 +1,4 @@
 <?php
-// Debug logging for app.php routing
-error_log("App.php accessed with URI: " . $_SERVER['REQUEST_URI']);
-
 require_once 'config.php';
 
 // Simple routing for v2
@@ -21,6 +18,15 @@ if ($path === 'assets/create') {
     $controllerFile = "controllers/ticket-create.php";
 } elseif (strpos($path, 'ticket-detail') === 0) {
     $controllerFile = "controllers/ticket-detail.php";
+} elseif (preg_match('/^invoices\/(\d+)$/', $path, $matches)) {
+    $_GET['id'] = $matches[1];
+    $controllerFile = "controllers/invoice_detail.php";
+} elseif (preg_match('/^customers\/(\d+)$/', $path, $matches)) {
+    $_GET['id'] = $matches[1];
+    $controllerFile = "controllers/customers.php";
+} elseif (preg_match('/^customers\/(\d+)$/', $path, $matches)) {
+    $_GET['id'] = $matches[1];
+    $controllerFile = "controllers/customers.php";
 } else {
     // Route to controllers
     $controllerFile = "controllers/{$path}.php";
