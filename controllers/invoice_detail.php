@@ -6,6 +6,16 @@ echo "<!-- Invoice detail controller loaded -->\n";
 $invoice_id = $_GET['id'] ?? 0;
 echo "<!-- Invoice ID: $invoice_id -->\n";
 
+// Handle POST requests
+if ($_POST) {
+    if (isset($_POST['mark_sent'])) {
+        $stmt = $pdo->prepare("UPDATE invoices SET status = 'sent' WHERE id = ?");
+        $stmt->execute([$invoice_id]);
+        header("Location: /SupporTracker/invoices/" . $invoice_id);
+        exit;
+    }
+}
+
 // Get invoice details
 try {
     echo "<!-- Getting invoice details -->\n";
@@ -28,12 +38,15 @@ if (!$invoice) {
     exit;
 }
 
-// Get invoice items from invoice_items table
+// Get invoice items with discount information from original sources
 $stmt = $pdo->prepare("
-    SELECT description, quantity, rate as unit_price, amount as total_price
-    FROM invoice_items
-    WHERE invoice_id = ?
-    ORDER BY id
+    SELECT ii.description, ii.quantity, ii.rate as unit_price, ii.amount as total_price,
+           COALESCE(tbi.discount, tp.discount, 0) as discount
+    FROM invoice_items ii
+    LEFT JOIN ticket_billing_items tbi ON ii.ticket_id = tbi.ticket_id AND ii.description = tbi.description
+    LEFT JOIN ticket_parts tp ON ii.ticket_id = tp.ticket_id AND ii.description = tp.description
+    WHERE ii.invoice_id = ?
+    ORDER BY ii.id
 ");
 $stmt->execute([$invoice_id]);
 $invoice_items = $stmt->fetchAll();
@@ -53,6 +66,13 @@ try {
     // If no location found, get default location
     if (!$locationInfo) {
         $locationInfo = $pdo->query("SELECT * FROM locations WHERE is_default = 1 LIMIT 1")->fetch();
+    }
+    
+    // Get company logo from settings
+    $logoStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'company_logo_url'");
+    $logoResult = $logoStmt->fetch();
+    if ($logoResult && $logoResult['setting_value']) {
+        $locationInfo['logo_url'] = $logoResult['setting_value'];
     }
 } catch (Exception $e) {
     // Default values if no location found

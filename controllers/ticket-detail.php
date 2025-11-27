@@ -292,18 +292,34 @@ if ($_POST) {
                 ]);
             }
             
-            // Calculate totals
+            // Calculate totals with tax
             $subtotal = 0;
+            $taxableAmount = 0;
+            
+            // Get tax rate from settings
+            $taxRateStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'default_tax_rate'");
+            $taxRateResult = $taxRateStmt->fetch();
+            $taxRate = $taxRateResult ? (float)$taxRateResult['setting_value'] / 100 : 0;
+            
             foreach ($items as $item) {
                 $subtotal += $item['total_price'];
+                if ($item['taxable'] ?? true) {
+                    $taxableAmount += $item['total_price'];
+                }
             }
             foreach ($parts as $part) {
                 $subtotal += $part['sell_price'];
+                if ($part['taxable'] ?? true) {
+                    $taxableAmount += $part['sell_price'];
+                }
             }
             
+            $taxAmount = $taxableAmount * $taxRate;
+            $total = $subtotal + $taxAmount;
+            
             // Update invoice totals
-            $stmt = $pdo->prepare("UPDATE invoices SET subtotal = ?, total = ? WHERE id = ?");
-            $stmt->execute([$subtotal, $subtotal, $invoiceId]);
+            $stmt = $pdo->prepare("UPDATE invoices SET subtotal = ?, tax_amount = ?, total = ? WHERE id = ?");
+            $stmt->execute([$subtotal, $taxAmount, $total, $invoiceId]);
             
             // Update ticket status to closed
             $stmt = $pdo->prepare("UPDATE tickets SET status = 'closed' WHERE id = ?");
@@ -446,11 +462,21 @@ try {
     // No pricing set yet
 }
 
+// Get tax rate for billing preview
+$taxRate = 0;
+try {
+    $taxRateStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'default_tax_rate'");
+    $taxRateResult = $taxRateStmt->fetch();
+    $taxRate = $taxRateResult ? (float)$taxRateResult['setting_value'] / 100 : 0;
+} catch (Exception $e) {
+    // Default to 0 if no tax rate set
+}
+
 renderModernPage(
     'Ticket Details - SupportTracker',
     'Ticket #' . ($ticket['ticket_number'] ?? 'TKT-' . str_pad($ticket['id'], 6, '0', STR_PAD_LEFT)),
     'ticket-detail.php',
-    compact('ticket', 'updates', 'parts', 'messages', 'messagingEnabled', 'assetCredentials', 'assetDetails', 'billingItems', 'servicePrices'),
+    compact('ticket', 'updates', 'parts', 'messages', 'messagingEnabled', 'assetCredentials', 'assetDetails', 'billingItems', 'servicePrices', 'taxRate'),
     ''
 );
 ?>

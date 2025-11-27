@@ -635,8 +635,9 @@
                             }
                         }
                         
-                        // Calculate subtotal with discounts
+                        // Calculate subtotal with discounts and tax
                         $subtotal = 0;
+                        $taxableAmount = 0;
                         ?>
                         
                         <?php if ($allInvoiceItems): ?>
@@ -708,10 +709,38 @@
                                         </tr>
                                         <?php 
                                         $subtotal += $finalTotal; // Use discounted total
-                                        endforeach; ?>
+                                        endforeach; 
+                                        
+                                        // Calculate taxable amount separately
+                                        foreach ($allInvoiceItems as $item) {
+                                            $discount = $item['discount'] ?? 0;
+                                            $discountAmount = $item['unit_price'] * ($discount / 100);
+                                            $finalPrice = $item['unit_price'] - $discountAmount;
+                                            $finalTotal = $finalPrice * $item['quantity'];
+                                            
+                                            if ($item['taxable']) {
+                                                $taxableAmount += $finalTotal;
+                                            }
+                                        }
+                                        
+                                        $taxAmount = $taxableAmount * $taxRate;
+                                        $total = $subtotal + $taxAmount;
+                                        ?>
                                         <tr class="table-info">
                                             <td colspan="4"><strong>Subtotal</strong></td>
                                             <td><strong>$<?= number_format($subtotal, 2) ?></strong></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                        <?php if ($taxAmount > 0): ?>
+                                        <tr class="table-warning">
+                                            <td colspan="4"><strong>Tax (<?= number_format($taxRate * 100, 1) ?>%)</strong></td>
+                                            <td><strong>$<?= number_format($taxAmount, 2) ?></strong></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                        <?php endif; ?>
+                                        <tr class="table-success">
+                                            <td colspan="4"><strong>Total</strong></td>
+                                            <td><strong>$<?= number_format($total, 2) ?></strong></td>
                                             <td colspan="2"></td>
                                         </tr>
                                     </tbody>
@@ -1137,9 +1166,71 @@ function toggleTax(itemType, itemId, button) {
                 button.classList.add('btn-success');
                 button.textContent = 'Yes';
             }
+            
+            // Recalculate tax dynamically
+            recalculateTax();
         }
     })
     .catch(error => console.error('Error:', error));
+}
+
+function recalculateTax() {
+    const taxRate = <?= $taxRate ?>;
+    let subtotal = 0;
+    let taxableAmount = 0;
+    
+    // Get all invoice items and calculate totals
+    document.querySelectorAll('tbody tr:not(.table-info):not(.table-warning):not(.table-success)').forEach(row => {
+        const totalCell = row.querySelector('[id^="total_"]');
+        const taxButton = row.querySelector('button[onclick*="toggleTax"]');
+        
+        if (totalCell && taxButton) {
+            const total = parseFloat(totalCell.textContent.replace('$', '').replace(',', ''));
+            subtotal += total;
+            
+            if (taxButton.classList.contains('btn-success')) {
+                taxableAmount += total;
+            }
+        }
+    });
+    
+    const taxAmount = taxableAmount * taxRate;
+    const finalTotal = subtotal + taxAmount;
+    
+    // Update the display
+    const subtotalRow = document.querySelector('.table-info td:last-child strong');
+    if (subtotalRow) subtotalRow.textContent = '$' + subtotal.toFixed(2);
+    
+    // Update or create tax row
+    let taxRow = document.querySelector('.table-warning');
+    if (taxAmount > 0) {
+        if (!taxRow) {
+            // Create tax row
+            const subtotalRow = document.querySelector('.table-info');
+            const totalRowElement = document.querySelector('.table-success');
+            
+            if (subtotalRow && totalRowElement) {
+                taxRow = document.createElement('tr');
+                taxRow.className = 'table-warning';
+                taxRow.innerHTML = `
+                    <td colspan="4"><strong>Tax (${(taxRate * 100).toFixed(1)}%)</strong></td>
+                    <td><strong>$${taxAmount.toFixed(2)}</strong></td>
+                    <td colspan="2"></td>
+                `;
+                subtotalRow.parentNode.insertBefore(taxRow, totalRowElement);
+            }
+        } else {
+            // Update existing tax row
+            const taxCell = taxRow.querySelector('td:nth-child(2) strong');
+            if (taxCell) taxCell.textContent = '$' + taxAmount.toFixed(2);
+        }
+    } else if (taxRow) {
+        taxRow.remove();
+    }
+    
+    // Update total row
+    const totalRow = document.querySelector('.table-success td:last-child strong');
+    if (totalRow) totalRow.textContent = '$' + finalTotal.toFixed(2);
 }
 
 function editPrice(itemType, itemId, currentPrice) {
@@ -1170,9 +1261,33 @@ function updateItemField(itemType, itemId, field, value) {
     })
     .then(response => {
         if (response.ok) {
+            // Reload and stay on billing tab
+            window.location.href = window.location.href.split('#')[0] + '#billing';
             location.reload();
         }
     })
     .catch(error => console.error('Error:', error));
 }
+</script>
+<?php
+// Add script to activate billing tab if hash is present
+?>
+<script>
+// Activate billing tab if URL has #billing hash
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash === '#billing') {
+        const billingTab = document.getElementById('billing-tab');
+        const billingPane = document.getElementById('billing');
+        
+        // Remove active from all tabs
+        document.querySelectorAll('.nav-link').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('show', 'active');
+        });
+        
+        // Activate billing tab
+        billingTab.classList.add('active');
+        billingPane.classList.add('show', 'active');
+    }
+});
 </script>
