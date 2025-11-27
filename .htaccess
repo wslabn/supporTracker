@@ -3,6 +3,12 @@ RewriteEngine On
 # Skip portal directory entirely
 RewriteRule ^portal/ - [L]
 
+# Skip includes directory
+RewriteRule ^includes/ - [L]
+
+# Skip static files
+RewriteRule \.(js|css|png|jpg|jpeg|gif|ico|svg)$ - [L]
+
 # Main app routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
